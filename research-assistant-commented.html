@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalypto — AI Research Assistant</title>
+
+  <!--
+    FONTS
+    We import two fonts from Google Fonts (free):
+    - "Syne" for headings: geometric, distinctive
+    - "IBM Plex Mono" for body/code: readable, technical feel
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <!--
+    PDF.JS
+    This is the library that reads PDF files in the browser.
+    It's loaded from a CDN (content delivery network) — no install needed.
+    "cdnjs" is a free public CDN, safe to use.
+  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    /* ── CSS VARIABLES ──────────────────────────────────────────
+       These are like constants in C++. Define colors once here,
+       use them everywhere. Easy to change the whole theme later.
+    ─────────────────────────────────────────────────────────── */
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #13131a;
+      --border:    #2a2a3a;
+      --accent:    #7cffb2;
+      --accent2:   #4f8cff;
+      --text:      #e8e8f0;
+      --muted:     #6b6b88;
+      --user-bg:   #1a1a2e;
+      --ai-bg:     #111118;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'IBM Plex Mono', monospace;
+      --radius:    12px;
+    }
+
+    /* ── RESET ──────────────────────────────────────────────────
+       Remove default browser spacing/sizing quirks.
+    ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────── */
+    header {
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--accent);
+    }
+    .logo span { color: var(--text); }
+    .status-pill {
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .status-pill.has-paper {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── MAIN LAYOUT ────────────────────────────────────────── */
+    .app {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 65px);
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL (upload + controls) ────────────────────── */
+    .sidebar {
+      width: 300px;
+      min-width: 260px;
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      background: var(--surface);
+    }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    /* The file drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124,255,178,0.04);
+    }
+    /* The actual file input is invisible; the drop zone is the visual */
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .drop-text { font-size: 12px; color: var(--muted); }
+    .drop-text strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+    /* Paper info card (shown after upload) */
+    .paper-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: none; /* hidden by default, shown via JS */
+    }
+    .paper-card.visible { display: block; }
+    .paper-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .paper-meta { font-size: 11px; color: var(--muted); }
+
+    /* Quick action buttons */
+    .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+    .quick-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-btn:hover {
+      border-color: var(--accent2);
+      background: rgba(79,140,255,0.06);
+      color: var(--accent2);
+    }
+    .quick-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* API Key input area */
+    .key-area { display: flex; flex-direction: column; gap: 6px; }
+    .key-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 12px;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .key-input:focus { outline: none; border-color: var(--accent2); }
+    .key-note { font-size: 10px; color: var(--muted); line-height: 1.5; }
+    .key-note a { color: var(--accent2); text-decoration: none; }
+
+    .key-saved {
+      font-size: 10px;
+      color: var(--accent);
+      display: none;
+      margin-top: 2px;
+      }
+    .key-saved.visible { display: block; }
+
+    /* ── RIGHT PANEL (chat) ─────────────────────────────────── */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Messages scroll container */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    /* Individual message bubble */
+    .message {
+      max-width: 760px;
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      line-height: 1.7;
+      font-size: 13.5px;
+      animation: fadeUp 0.25s ease;
+    }
+    /* User messages align right */
+    .message.user {
+      background: var(--user-bg);
+      border: 1px solid #2a2a4a;
+      align-self: flex-end;
+      color: var(--text);
+    }
+    /* AI messages align left */
+    .message.ai {
+      background: var(--ai-bg);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+    .message.ai .sender {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: block;
+    }
+    /* Loading dots animation */
+    .message.loading .dots span {
+      display: inline-block;
+      animation: blink 1.2s infinite;
+      opacity: 0;
+    }
+    .message.loading .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .message.loading .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Empty state (shown before any messages) */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 40px;
+    }
+    .empty-icon { font-size: 48px; opacity: 0.3; }
+    .empty-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      color: var(--text);
+      opacity: 0.5;
+    }
+    .empty-sub { font-size: 12px; max-width: 320px; }
+
+    /* ── INPUT BAR (bottom) ─────────────────────────────────── */
+    .input-bar {
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      background: var(--surface);
+    }
+    .input-bar textarea {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      resize: none;
+      min-height: 46px;
+      max-height: 160px;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+    .input-bar textarea:focus { outline: none; border-color: var(--accent2); }
+    .input-bar textarea::placeholder { color: var(--muted); }
+    .send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { opacity: 0.85; }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .send-btn svg { width: 18px; height: 18px; fill: #0a0a0f; }
+
+    /* ── SCROLLBAR STYLING ──────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── PROGRESS BAR (for PDF parsing) ────────────────────── */
+    .progress-wrap {
+      height: 2px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-wrap.visible { display: block; }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* ── FORMATTED AI RESPONSE ──────────────────────────────── */
+    .message.ai p { margin-bottom: 10px; }
+    .message.ai strong { color: var(--accent); font-weight: 500; }
+    .message.ai ul, .message.ai ol {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+    .message.ai li { margin-bottom: 4px; }
+    .message.ai code {
+      background: rgba(124,255,178,0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────── -->
+<header>
+  <div class="logo">Kaly<span>pto</span></div>
+  <!-- This pill updates when a paper is loaded -->
+  <div class="status-pill" id="statusPill">No paper loaded</div>
+</header>
+
+<!-- ── MAIN APP ─────────────────────────────────────────────── -->
+<div class="app">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- API KEY SECTION -->
+    <div>
+      <div class="section-label">Groq API Key</div>
+      <div class="key-area">
+        <!--
+          The user pastes their Groq API key here.
+          type="password" hides the characters for privacy.
+          We store it in a JS variable — never sent anywhere except Groq.
+        -->
+        <input type="password" class="key-input" id="apiKey"
+               placeholder="Paste your API key..."/>
+        <p class = "key-saved" id = "keySaved">✓ Key saved</p>
+        <p class="key-note">
+          Get a free key at
+          <a href="https://console.groq.com" target="_blank">
+            console.groq.com
+          </a>. Your key stays in your browser only.
+        </p>
+      </div>
+    </div>
+
+    <!-- PDF UPLOAD SECTION -->
+    <div>
+      <div class="section-label">Research Paper</div>
+      <div class="drop-zone" id="dropZone">
+        <!-- Invisible file input layered on top of the styled zone -->
+        <input type="file" id="fileInput" accept=".pdf"/>
+        <span class="drop-icon">📄</span>
+        <div class="drop-text">
+          <strong>Upload a PDF</strong>
+          Click or drag & drop
+        </div>
+      </div>
+
+      <!-- Progress bar shown while PDF is being parsed -->
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <!-- Paper info card, shown after successful upload -->
+      <div class="paper-card" id="paperCard">
+        <div class="paper-title" id="paperTitle">—</div>
+        <div class="paper-meta" id="paperMeta">—</div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div>
+      <div class="section-label">Quick Actions</div>
+      <div class="quick-actions">
+        <!--
+          These buttons send pre-written prompts automatically.
+          They're disabled until a paper is loaded.
+        -->
+        <button class="quick-btn" id="btnSummarize" disabled>
+          📋 Summarize this paper
+        </button>
+        <button class="quick-btn" id="btnMethods" disabled>
+          🔬 Explain the methodology
+        </button>
+        <button class="quick-btn" id="btnFindings" disabled>
+          💡 Key findings & conclusions
+        </button>
+        <button class="quick-btn" id="btnQuiz" disabled>
+          🧠 Generate study questions
+        </button>
+        <button class="quick-btn" id="btnFlash" disabled>
+          ⚡ Make flashcard points
+        </button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- RIGHT CHAT AREA -->
+  <main class="chat-area">
+
+    <!-- Messages appear here -->
+    <div class="messages" id="messages">
+      <!-- Empty state shown before any interaction -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🔬</div>
+        <div class="empty-title">Upload a paper to begin</div>
+        <p class="empty-sub">
+          Load any research paper PDF, then ask questions,
+          get summaries, or generate study materials.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom input bar -->
+    <div class="input-bar">
+      <textarea id="userInput"
+                placeholder="Ask anything about the paper..."
+                rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" disabled>
+        <!-- Send arrow icon (inline SVG, no external dependency) -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+        </svg>
+      </button>
+    </div>
+
+  </main>
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────
+  JAVASCRIPT
+  This is where the logic lives. Think of it like your main.cpp.
+  We'll walk through each section with comments.
+───────────────────────────────────────────────────────────── -->
+<script>
+// ── CONFIGURE PDF.JS WORKER ────────────────────────────────────
+// PDF.js uses a "worker" — a background thread — to parse PDFs
+// without freezing the UI. We point it to the CDN version.
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── STATE VARIABLES ────────────────────────────────────────────
+// Like global variables in C++. These hold the app's current state.
+let paperText    = '';     // The extracted text from the PDF
+let paperName    = '';     // The filename of the uploaded PDF
+let chatHistory  = [];     // Array of {role, content} for conversation memory
+let isLoading    = false;  // Prevent double-sends while waiting for AI
+
+// ── LOCAL STORAGE KEYS ─────────────────────────────────────────
+// Constants for our storage key names. Using constants avoids typos.
+const LS_HISTORY  = 'kalypto_chat_history';
+const LS_PAPER    = 'kalypto_paper';
+const LS_API_KEY  = 'kalypto_api_key';
+
+// ── SAVE STATE TO STORAGE ──────────────────────────────────────
+// Call this whenever something changes that we want to remember.
+function saveState() {
+  localStorage.setItem(LS_HISTORY, JSON.stringify(chatHistory));
+  localStorage.setItem(LS_PAPER, JSON.stringify({ text: paperText, name: paperName }));
+}
+
+// ── LOAD STATE FROM STORAGE ────────────────────────────────────
+// Called once on page load to restore previous session.
+function loadState() {
+  // Restore API key
+  const savedKey = localStorage.getItem(LS_API_KEY);
+  if (savedKey) {
+    apiKeyInput.value = savedKey;
+    document.getElementById('keySaved').classList.add('visible');
+  }
+
+  // Restore paper
+  const savedPaper = localStorage.getItem(LS_PAPER);
+  if (savedPaper) {
+    const parsed = JSON.parse(savedPaper);
+    paperText = parsed.text || '';
+    paperName = parsed.name || '';
+
+    if (paperName) {
+      paperTitle.textContent = paperName;
+      paperMeta.textContent  = 'Restored from last session';
+      paperCard.classList.add('visible');
+      statusPill.textContent = '● Paper loaded';
+      statusPill.classList.add('has-paper');
+      sendBtn.disabled = false;
+      Object.values(quickBtns).forEach(btn => btn.disabled = false);
+    }
+  }
+
+  // Restore chat history and re-render messages
+  const savedHistory = localStorage.getItem(LS_HISTORY);
+  if (savedHistory) {
+    chatHistory = JSON.parse(savedHistory);
+
+    if (chatHistory.length > 0) {
+      // Hide empty state
+      emptyState.style.display = 'none';
+
+      // Re-render each message without animation
+      chatHistory.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `message ${msg.role === 'user' ? 'user' : 'ai'}`;
+        if (msg.role !== 'user') {
+          div.innerHTML = `<span class="sender">Kalypto</span>${formatText(msg.content)}`;
+        } else {
+          div.textContent = msg.content;
+        }
+        messagesDiv.appendChild(div);
+      });
+
+      // Scroll to bottom
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+  }
+}
+
+// ── DOM REFERENCES ─────────────────────────────────────────────
+// Cache references to HTML elements we'll use repeatedly.
+// document.getElementById() is like finding a variable by name.
+const apiKeyInput  = document.getElementById('apiKey');
+const fileInput    = document.getElementById('fileInput');
+const dropZone     = document.getElementById('dropZone');
+const messagesDiv  = document.getElementById('messages');
+const emptyState   = document.getElementById('emptyState');
+const userInput    = document.getElementById('userInput');
+const sendBtn      = document.getElementById('sendBtn');
+const statusPill   = document.getElementById('statusPill');
+const paperCard    = document.getElementById('paperCard');
+const paperTitle   = document.getElementById('paperTitle');
+const paperMeta    = document.getElementById('paperMeta');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar  = document.getElementById('progressBar');
+
+// Quick action buttons
+const quickBtns = {
+  summarize: document.getElementById('btnSummarize'),
+  methods:   document.getElementById('btnMethods'),
+  findings:  document.getElementById('btnFindings'),
+  quiz:      document.getElementById('btnQuiz'),
+  flash:     document.getElementById('btnFlash'),
+};
+
+// ── PDF UPLOAD HANDLER ─────────────────────────────────────────
+// This runs when the user selects a file via the file input.
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file && file.type === 'application/pdf') loadPDF(file);
+});
+
+// Drag and drop events
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault(); // Needed to allow drop
+  dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('drag-over');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') loadPDF(file);
+});
+
+// ── LOAD AND PARSE PDF ─────────────────────────────────────────
+// This is the main PDF reading function.
+async function loadPDF(file) {
+  paperName = file.name;
+
+  // Show progress bar
+  progressWrap.classList.add('visible');
+  progressBar.style.width = '10%';
+
+  // FileReader reads the raw bytes of the file
+  const reader = new FileReader();
+  reader.readAsArrayBuffer(file); // Read as raw binary (ArrayBuffer)
+
+  reader.onload = async (e) => {
+    try {
+      progressBar.style.width = '30%';
+
+      // Pass the raw bytes to PDF.js to parse
+      const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
+      const totalPages = pdf.numPages;
+
+      progressBar.style.width = '50%';
+
+      // Loop through each page and extract its text
+      // This is like iterating a for loop in C++
+      let fullText = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+
+        // Each page has an array of text items; join them with spaces
+        const pageText = content.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n\n';
+
+        // Update progress bar as pages are processed
+        progressBar.style.width = (50 + (i / totalPages) * 40) + '%';
+      }
+
+      // Store extracted text (truncate to ~12000 chars to stay within free tier limits)
+      // 12000 chars ≈ ~3000 tokens, safely under Groq's free limit
+      paperText = fullText.slice(0, 12000);
+
+      progressBar.style.width = '100%';
+
+      // Short delay then hide progress bar
+      setTimeout(() => {
+        progressWrap.classList.remove('visible');
+        progressBar.style.width = '0%';
+      }, 600);
+
+      // Update the UI to show paper info
+      paperTitle.textContent = paperName;
+      paperMeta.textContent  = `${totalPages} pages · ${Math.round(fullText.length / 1000)}k chars extracted`;
+      paperCard.classList.add('visible');
+
+      // Update status pill
+      statusPill.textContent = '● Paper loaded';
+      statusPill.classList.add('has-paper');
+
+      // Enable the send button and quick action buttons
+      sendBtn.disabled = false;
+      Object.values(quickBtns).forEach(btn => btn.disabled = false);
+
+      // Reset chat history when a new paper is loaded
+      chatHistory = [];
+
+      // Clear old chat history from storage since it's a new paper
+      localStorage.removeItem(LS_HISTORY);
+      saveState();
+
+      // Show a welcome message from AI
+      addMessage('ai',
+        `**Paper loaded:** ${paperName}\n\nI've read through the document. You can now ask me anything about it — for example:\n\n- "What is this paper about?"\n- "Explain the methodology in simple terms"\n- "What are the main conclusions?"\n\nOr use the quick actions on the left.`
+      );
+
+    } catch (err) {
+      progressWrap.classList.remove('visible');
+      addMessage('ai', `⚠️ Error reading PDF: ${err.message}. Make sure the file is a valid, non-encrypted PDF.`);
+    }
+  };
+}
+
+// ── SEND MESSAGE ───────────────────────────────────────────────
+// This runs when the user clicks Send or presses Enter.
+async function sendMessage(overrideText) {
+  // Get the message text (either from input or a quick action override)
+  const text = (overrideText || userInput.value).trim();
+
+  if (!text || isLoading) return;
+
+  // Check that API key is entered
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) {
+    addMessage('ai', '⚠️ Please enter your Groq API key in the sidebar first.');
+    return;
+  }
+
+  // Show user message and clear input
+  addMessage('user', text);
+  userInput.value = '';
+  userInput.style.height = 'auto';
+
+  // Show loading indicator
+  isLoading = true;
+  sendBtn.disabled = true;
+  const loadingMsg = addLoadingMessage();
+
+  // Build the conversation history for the API
+  // We add the new user message to our running history
+  chatHistory.push({ role: 'user', content: text });
+
+  try {
+    // ── THE API CALL ─────────────────────────────────────────
+    // This is where we talk to Groq.
+    // We use fetch() — JavaScript's built-in HTTP request function.
+    // Think of it like sending a POST request with a JSON body.
+    const response = await fetch(
+      'https://api.groq.com/openai/v1/chat/completions',
+    {
+        method: 'POST',                          // HTTP POST (sending data)
+        headers: {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${apiKey.trim().replace(/[^\x20-\x7E]/g, '')}`
+}, // Tell server we're sending JSON
+        body: JSON.stringify({
+  model: "llama-3.3-70b-versatile",
+  max_tokens: 1024,
+  messages: [
+    {
+      role: "system", // System instruction: tells the AI how to behave
+      content: `You are Kalypto, an AI research assistant.
+You help users understand academic papers and study effectively.
+Be clear, concise, and educational.
+Use markdown formatting: **bold** for key terms, bullet points for lists.
+
+PAPER CONTENT:
+${paperText}`
+    },
+    ...chatHistory.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    }))
+  ]
+})
+      }
+    );
+
+    // Parse the JSON response from Groq
+    const data = await response.json();
+
+    // Remove the loading indicator
+    loadingMsg.remove();
+
+    if (data.error) {
+      // API returned an error (e.g. invalid key, quota exceeded)
+      addMessage('ai', `⚠️ API Error: ${data.error.message}`);
+      chatHistory.pop(); // Remove the failed message from history
+    } else {
+      // Extract the AI's reply text from the response structure
+      // Groq nests its response: choices[0].content.parts[0].text
+      const reply = data.choices?.[0]?.message?.content || 'No response.';
+
+      // Add AI reply to the chat
+      addMessage('ai', reply);
+
+      // Add AI reply to history (so it remembers the conversation)
+      chatHistory.push({ role: 'model', content: reply });
+    }
+    // Save updated history to localStorage
+      saveState();
+
+  } catch (err) {
+    loadingMsg.remove();
+    addMessage('ai', `⚠️ Network error: ${err.message}. Check your internet connection.`);
+    chatHistory.pop();
+  }
+
+  isLoading = false;
+  sendBtn.disabled = false;
+}
+
+// ── ADD MESSAGE TO UI ──────────────────────────────────────────
+// Creates and appends a message bubble to the chat.
+function addMessage(role, text) {
+  // Hide empty state once first message appears
+  if (emptyState) emptyState.style.display = 'none';
+
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+
+  if (role === 'ai') {
+    // AI messages have a sender label + formatted content
+    div.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}`;
+  } else {
+    div.textContent = text;
+  }
+
+  messagesDiv.appendChild(div);
+
+  // Auto-scroll to the latest message
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  return div;
+}
+
+// ── LOADING INDICATOR ──────────────────────────────────────────
+function addLoadingMessage() {
+  const div = document.createElement('div');
+  div.className = 'message ai loading';
+  div.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`;
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  return div;
+}
+
+// ── TEXT FORMATTER ─────────────────────────────────────────────
+// Converts basic markdown to HTML.
+// **bold** → <strong>, `code` → <code>, newlines → <br>
+function formatText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')   // **bold**
+    .replace(/`(.*?)`/g, '<code>$1</code>')              // `code`
+    .replace(/^- (.+)$/gm, '<li>$1</li>')                // - list items
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')          // wrap lists in <ul>
+    .replace(/\n\n/g, '</p><p>')                         // paragraphs
+    .replace(/\n/g, '<br>')                              // line breaks
+    .replace(/^(.+)$/, '<p>$1</p>');                     // wrap in <p>
+}
+
+// ── QUICK ACTION BUTTONS ───────────────────────────────────────
+// Each button sends a pre-written prompt
+quickBtns.summarize.addEventListener('click', () =>
+  sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.'));
+quickBtns.methods.addEventListener('click', () =>
+  sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?'));
+quickBtns.findings.addEventListener('click', () =>
+  sendMessage('What are the key findings and conclusions of this paper? What do the results mean?'));
+quickBtns.quiz.addEventListener('click', () =>
+  sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.'));
+quickBtns.flash.addEventListener('click', () =>
+  sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.'));
+
+// ── SEND ON ENTER (Shift+Enter for newline) ────────────────────
+userInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// Auto-resize textarea as user types
+userInput.addEventListener('input', () => {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
+});
+
+// ── SAVE API KEY ON INPUT ──────────────────────────────────────
+// Saves the key to localStorage as the user types it.
+apiKeyInput.addEventListener('input', () => {
+  localStorage.setItem(LS_API_KEY, apiKeyInput.value.trim());
+
+  // Show "✓ Key saved" indicator if key is not empty
+  const keySaved = document.getElementById('keySaved');
+  if (apiKeyInput.value.trim()) {
+    keySaved.classList.add('visible');
+  } else {
+    keySaved.classList.remove('visible');
+  }
+});
+
+// Send button click
+sendBtn.addEventListener('click', () => sendMessage());
+
+// ── RESTORE PREVIOUS SESSION ───────────────────────────────────
+// Runs once when the page loads. Pulls everything back from storage.
+loadState();
+
+</script>
+</body>
+</html>

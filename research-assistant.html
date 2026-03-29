@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalypto — AI Research Assistant</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #13131a;
+      --border:    #2a2a3a;
+      --accent:    #7cffb2;
+      --accent2:   #4f8cff;
+      --text:      #e8e8f0;
+      --muted:     #6b6b88;
+      --user-bg:   #1a1a2e;
+      --ai-bg:     #111118;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'IBM Plex Mono', monospace;
+      --radius:    12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--accent);
+    }
+    .logo span { color: var(--text); }
+    .status-pill {
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .status-pill.has-paper {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .app {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 65px);
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 300px;
+      min-width: 260px;
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      background: var(--surface);
+    }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124,255,178,0.04);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .drop-text { font-size: 12px; color: var(--muted); }
+    .drop-text strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+    .paper-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: none;
+    }
+    .paper-card.visible { display: block; }
+    .paper-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .paper-meta { font-size: 11px; color: var(--muted); }
+
+    .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+    .quick-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-btn:hover {
+      border-color: var(--accent2);
+      background: rgba(79,140,255,0.06);
+      color: var(--accent2);
+    }
+    .quick-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .key-area { display: flex; flex-direction: column; gap: 6px; }
+    .key-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 12px;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .key-input:focus { outline: none; border-color: var(--accent2); }
+    .key-note { font-size: 10px; color: var(--muted); line-height: 1.5; }
+    .key-note a { color: var(--accent2); text-decoration: none; }
+
+    .key-saved {
+      font-size: 10px;
+      color: var(--accent);
+      display: none;
+      margin-top: 2px;
+      }
+    .key-saved.visible { display: block; }
+
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      max-width: 760px;
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      line-height: 1.7;
+      font-size: 13.5px;
+      animation: fadeUp 0.25s ease;
+    }
+
+    .message.user {
+      background: var(--user-bg);
+      border: 1px solid #2a2a4a;
+      align-self: flex-end;
+      color: var(--text);
+    }
+
+    .message.ai {
+      background: var(--ai-bg);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+    .message.ai .sender {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: block;
+    }
+    /* Loading dots animation */
+    .message.loading .dots span {
+      display: inline-block;
+      animation: blink 1.2s infinite;
+      opacity: 0;
+    }
+    .message.loading .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .message.loading .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 40px;
+    }
+    .empty-icon { font-size: 48px; opacity: 0.3; }
+    .empty-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      color: var(--text);
+      opacity: 0.5;
+    }
+    .empty-sub { font-size: 12px; max-width: 320px; }
+
+
+    .input-bar {
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      background: var(--surface);
+    }
+    .input-bar textarea {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      resize: none;
+      min-height: 46px;
+      max-height: 160px;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+    .input-bar textarea:focus { outline: none; border-color: var(--accent2); }
+    .input-bar textarea::placeholder { color: var(--muted); }
+    .send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { opacity: 0.85; }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .send-btn svg { width: 18px; height: 18px; fill: #0a0a0f; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    .progress-wrap {
+      height: 2px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-wrap.visible { display: block; }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .message.ai p { margin-bottom: 10px; }
+    .message.ai strong { color: var(--accent); font-weight: 500; }
+    .message.ai ul, .message.ai ol {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+    .message.ai li { margin-bottom: 4px; }
+    .message.ai code {
+      background: rgba(124,255,178,0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Kaly<span>pto</span></div>
+  <!-- This pill updates when a paper is loaded -->
+  <div class="status-pill" id="statusPill">No paper loaded</div>
+</header>
+
+<div class="app">
+
+  <aside class="sidebar">
+
+    <div>
+      <div class="section-label">Groq API Key</div>
+      <div class="key-area">
+
+        <input type="password" class="key-input" id="apiKey"
+               placeholder="Paste your API key..."/>
+        <p class = "key-saved" id = "keySaved">✓ Key saved</p>
+        <p class="key-note">
+          Get a free key at
+          <a href="https://console.groq.com" target="_blank">
+            console.groq.com
+          </a>. Your key stays in your browser only.
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Research Paper</div>
+      <div class="drop-zone" id="dropZone">
+
+        <input type="file" id="fileInput" accept=".pdf"/>
+        <span class="drop-icon">📄</span>
+        <div class="drop-text">
+          <strong>Upload a PDF</strong>
+          Click or drag & drop
+        </div>
+      </div>
+
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div class="paper-card" id="paperCard">
+        <div class="paper-title" id="paperTitle">—</div>
+        <div class="paper-meta" id="paperMeta">—</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Quick Actions</div>
+      <div class="quick-actions">
+
+        <button class="quick-btn" id="btnSummarize" disabled>
+          📋 Summarize this paper
+        </button>
+        <button class="quick-btn" id="btnMethods" disabled>
+          🔬 Explain the methodology
+        </button>
+        <button class="quick-btn" id="btnFindings" disabled>
+          💡 Key findings & conclusions
+        </button>
+        <button class="quick-btn" id="btnQuiz" disabled>
+          🧠 Generate study questions
+        </button>
+        <button class="quick-btn" id="btnFlash" disabled>
+          ⚡ Make flashcard points
+        </button>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="chat-area">
+
+    <div class="messages" id="messages">
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🔬</div>
+        <div class="empty-title">Upload a paper to begin</div>
+        <p class="empty-sub">
+          Load any research paper PDF, then ask questions,
+          get summaries, or generate study materials.
+        </p>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <textarea id="userInput"
+                placeholder="Ask anything about the paper..."
+                rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" disabled>
+
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+        </svg>
+      </button>
+    </div>
+
+  </main>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let paperText    = '';     
+let paperName    = '';     
+let chatHistory  = [];     
+let isLoading    = false;  
+
+const LS_HISTORY  = 'kalypto_chat_history';
+const LS_PAPER    = 'kalypto_paper';
+const LS_API_KEY  = 'kalypto_api_key';
+
+function saveState() {
+  localStorage.setItem(LS_HISTORY, JSON.stringify(chatHistory));
+  localStorage.setItem(LS_PAPER, JSON.stringify({ text: paperText, name: paperName }));
+}
+
+function loadState() {
+
+  const savedKey = localStorage.getItem(LS_API_KEY);
+  if (savedKey) {
+    apiKeyInput.value = savedKey;
+    document.getElementById('keySaved').classList.add('visible');
+  }
+
+  const savedPaper = localStorage.getItem(LS_PAPER);
+  if (savedPaper) {
+    const parsed = JSON.parse(savedPaper);
+    paperText = parsed.text || '';
+    paperName = parsed.name || '';
+
+    if (paperName) {
+      paperTitle.textContent = paperName;
+      paperMeta.textContent  = 'Restored from last session';
+      paperCard.classList.add('visible');
+      statusPill.textContent = '● Paper loaded';
+      statusPill.classList.add('has-paper');
+      sendBtn.disabled = false;
+      Object.values(quickBtns).forEach(btn => btn.disabled = false);
+    }
+  }
+
+  const savedHistory = localStorage.getItem(LS_HISTORY);
+  if (savedHistory) {
+    chatHistory = JSON.parse(savedHistory);
+
+    if (chatHistory.length > 0) {
+
+      emptyState.style.display = 'none';
+
+      chatHistory.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `message ${msg.role === 'user' ? 'user' : 'ai'}`;
+        if (msg.role !== 'user') {
+          div.innerHTML = `<span class="sender">Kalypto</span>${formatText(msg.content)}`;
+        } else {
+          div.textContent = msg.content;
+        }
+        messagesDiv.appendChild(div);
+      });
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+  }
+}
+
+const apiKeyInput  = document.getElementById('apiKey');
+const fileInput    = document.getElementById('fileInput');
+const dropZone     = document.getElementById('dropZone');
+const messagesDiv  = document.getElementById('messages');
+const emptyState   = document.getElementById('emptyState');
+const userInput    = document.getElementById('userInput');
+const sendBtn      = document.getElementById('sendBtn');
+const statusPill   = document.getElementById('statusPill');
+const paperCard    = document.getElementById('paperCard');
+const paperTitle   = document.getElementById('paperTitle');
+const paperMeta    = document.getElementById('paperMeta');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar  = document.getElementById('progressBar');
+
+const quickBtns = {
+  summarize: document.getElementById('btnSummarize'),
+  methods:   document.getElementById('btnMethods'),
+  findings:  document.getElementById('btnFindings'),
+  quiz:      document.getElementById('btnQuiz'),
+  flash:     document.getElementById('btnFlash'),
+};
+
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file && file.type === 'application/pdf') loadPDF(file);
+});
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('drag-over');
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') loadPDF(file);
+});
+
+async function loadPDF(file) {
+  paperName = file.name;
+
+  progressWrap.classList.add('visible');
+  progressBar.style.width = '10%';
+
+  const reader = new FileReader();
+  reader.readAsArrayBuffer(file);
+
+  reader.onload = async (e) => {
+    try {
+      progressBar.style.width = '30%';
+
+      const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
+      const totalPages = pdf.numPages;
+
+      progressBar.style.width = '50%';
+
+      let fullText = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+
+        const pageText = content.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n\n';
+
+        progressBar.style.width = (50 + (i / totalPages) * 40) + '%';
+      }
+
+      paperText = fullText.slice(0, 12000);
+
+      progressBar.style.width = '100%';
+      setTimeout(() => {
+        progressWrap.classList.remove('visible');
+        progressBar.style.width = '0%';
+      }, 600);
+
+      paperTitle.textContent = paperName;
+      paperMeta.textContent  = `${totalPages} pages · ${Math.round(fullText.length / 1000)}k chars extracted`;
+      paperCard.classList.add('visible');
+
+      statusPill.textContent = '● Paper loaded';
+      statusPill.classList.add('has-paper');
+
+      sendBtn.disabled = false;
+      Object.values(quickBtns).forEach(btn => btn.disabled = false);
+
+      chatHistory = [];
+
+      localStorage.removeItem(LS_HISTORY);
+      saveState();
+
+      addMessage('ai',
+        `**Paper loaded:** ${paperName}\n\nI've read through the document. You can now ask me anything about it — for example:\n\n- "What is this paper about?"\n- "Explain the methodology in simple terms"\n- "What are the main conclusions?"\n\nOr use the quick actions on the left.`
+      );
+
+    } catch (err) {
+      progressWrap.classList.remove('visible');
+      addMessage('ai', `⚠️ Error reading PDF: ${err.message}. Make sure the file is a valid, non-encrypted PDF.`);
+    }
+  };
+}
+
+async function sendMessage(overrideText) {
+
+  const text = (overrideText || userInput.value).trim();
+
+  if (!text || isLoading) return;
+
+
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) {
+    addMessage('ai', '⚠️ Please enter your Groq API key in the sidebar first.');
+    return;
+  }
+
+  addMessage('user', text);
+  userInput.value = '';
+  userInput.style.height = 'auto';
+
+  isLoading = true;
+  sendBtn.disabled = true;
+  const loadingMsg = addLoadingMessage();
+
+  chatHistory.push({ role: 'user', content: text });
+
+  try {
+    const response = await fetch(
+      'https://api.groq.com/openai/v1/chat/completions',
+    {
+        method: 'POST',
+        headers: {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${apiKey.trim().replace(/[^\x20-\x7E]/g, '')}`
+},
+        body: JSON.stringify({
+  model: "llama-3.3-70b-versatile",
+  max_tokens: 1024,
+  messages: [
+    {
+      role: "system", 
+      content: `You are Kalypto, an AI research assistant.
+You help users understand academic papers and study effectively.
+Be clear, concise, and educational.
+Use markdown formatting: **bold** for key terms, bullet points for lists.
+
+PAPER CONTENT:
+${paperText}`
+    },
+    ...chatHistory.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    }))
+  ]
+})
+      }
+    );
+
+    const data = await response.json();
+
+    loadingMsg.remove();
+
+    if (data.error) {
+
+      addMessage('ai', `⚠️ API Error: ${data.error.message}`);
+      chatHistory.pop();
+    } else {
+
+      const reply = data.choices?.[0]?.message?.content || 'No response.';
+
+      addMessage('ai', reply);
+
+      chatHistory.push({ role: 'model', content: reply });
+    }
+
+      saveState();
+
+  } catch (err) {
+    loadingMsg.remove();
+    addMessage('ai', `⚠️ Network error: ${err.message}. Check your internet connection.`);
+    chatHistory.pop();
+  }
+
+  isLoading = false;
+  sendBtn.disabled = false;
+}
+
+function addMessage(role, text) {
+
+  if (emptyState) emptyState.style.display = 'none';
+
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+
+  if (role === 'ai') {
+
+    div.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}`;
+  } else {
+    div.textContent = text;
+  }
+
+  messagesDiv.appendChild(div);
+
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  return div;
+}
+
+function addLoadingMessage() {
+  const div = document.createElement('div');
+  div.className = 'message ai loading';
+  div.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`;
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  return div;
+}
+
+function formatText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+    .replace(/`(.*?)`/g, '<code>$1</code>')             
+    .replace(/^- (.+)$/gm, '<li>$1</li>')                
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')         
+    .replace(/\n\n/g, '</p><p>')                        
+    .replace(/\n/g, '<br>')                              
+    .replace(/^(.+)$/, '<p>$1</p>');                     
+}
+
+quickBtns.summarize.addEventListener('click', () =>
+  sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.'));
+quickBtns.methods.addEventListener('click', () =>
+  sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?'));
+quickBtns.findings.addEventListener('click', () =>
+  sendMessage('What are the key findings and conclusions of this paper? What do the results mean?'));
+quickBtns.quiz.addEventListener('click', () =>
+  sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.'));
+quickBtns.flash.addEventListener('click', () =>
+  sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.'));
+
+userInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+userInput.addEventListener('input', () => {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
+});
+
+apiKeyInput.addEventListener('input', () => {
+  localStorage.setItem(LS_API_KEY, apiKeyInput.value.trim());
+
+  const keySaved = document.getElementById('keySaved');
+  if (apiKeyInput.value.trim()) {
+    keySaved.classList.add('visible');
+  } else {
+    keySaved.classList.remove('visible');
+  }
+});
+
+sendBtn.addEventListener('click', () => sendMessage());
+
+loadState();
+
+</script>
+</body>
+</html>

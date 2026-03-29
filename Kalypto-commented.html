@@ -6,6 +6,7 @@
   <title>Kalypto — AI Research Assistant</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Supabase JS client — handles auth and database -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -35,6 +36,9 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
 
+    /* ── AUTH SCREEN ──────────────────────────────────────────
+       Full-page login/register overlay. Shown when logged out.
+    ─────────────────────────────────────────────────────────── */
     .auth-screen {
       position: fixed;
       inset: 0;
@@ -67,6 +71,7 @@
     .auth-logo span { color: var(--text); }
     .auth-tagline { font-size: 12px; color: var(--muted); text-align: center; margin-top: -12px; }
 
+    /* Tab switcher for Login / Register */
     .auth-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
     .auth-tab { flex: 1; background: transparent; border: none; border-radius: 6px; padding: 8px; color: var(--muted); font-family: var(--font-body); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s; }
     .auth-tab.active { background: var(--surface2); color: var(--text); }
@@ -117,6 +122,7 @@
       background: var(--border);
     }
 
+    /* Google sign in button */
     .auth-google {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -148,6 +154,7 @@
       min-height: 16px;
     }
 
+    /* ── HEADER ─────────────────────────────────────────────── */
     header { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; position: relative; z-index: 100; gap: 12px; }
     .header-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
     .logo { font-family: var(--font-head); font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--accent); }
@@ -161,6 +168,7 @@
     .status-pill { font-size: 11px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.5px; white-space: nowrap; }
     .status-pill.has-paper { border-color: var(--accent); color: var(--accent); }
 
+    /* User avatar / logout button */
     .user-btn {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -181,6 +189,7 @@
     }
     .user-btn:hover { border-color: var(--danger); color: var(--danger); }
 
+    /* ── MAIN LAYOUT ────────────────────────────────────────── */
     .app { display: flex; flex: 1; height: calc(100vh - 57px); overflow: hidden; }
     .sidebar { width: 280px; min-width: 240px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--surface); overflow: hidden; transition: transform 0.3s ease; }
     .sidebar-top { padding: 20px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex-shrink: 0; }
@@ -311,6 +320,7 @@
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; opacity: 0; transition: opacity 0.3s ease; }
     .overlay.visible { display: block; opacity: 1; }
 
+    /* Sync indicator */
     .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); display: inline-block; margin-left: 4px; opacity: 0; transition: opacity 0.3s; }
     .sync-dot.syncing { opacity: 1; animation: pulse 1s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
@@ -327,14 +337,19 @@
   </style>
 </head>
 <body>
+
+<!-- ── AUTH SCREEN ─────────────────────────────────────────── -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">Kaly<span>pto</span></div>
     <p class="auth-tagline">AI-powered research assistant</p>
+
     <div class="auth-tabs">
       <button class="auth-tab active" id="authTabLogin">Sign In</button>
       <button class="auth-tab" id="authTabRegister">Create Account</button>
     </div>
+
+    <!-- Login form -->
     <div id="authLoginForm">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="auth-field">
@@ -349,6 +364,7 @@
       </div>
     </div>
 
+    <!-- Register form -->
     <div id="authRegisterForm" style="display:none">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="auth-field">
@@ -394,6 +410,7 @@
   <div class="header-right">
     <button id="themeToggle" style="background:none;border:1px solid var(--border);border-radius:999px;padding:4px 12px;color:var(--muted);font-family:var(--font-body);font-size:11px;cursor:pointer;">☀ Light</button>
     <div class="status-pill" id="statusPill">No paper loaded</div>
+    <!-- Shows logged-in user's email + logout on click -->
     <button class="user-btn" id="userBtn" style="display:none">
       <span id="userEmail">—</span>
       <span class="sync-dot" id="syncDot"></span>
@@ -513,6 +530,10 @@
 </div>
 
 <script>
+// ── SUPABASE SETUP ─────────────────────────────────────────────
+// Initialize the Supabase client with your project URL and anon key.
+// The anon key is safe to expose in frontend code — row level security
+// on the database ensures users can only access their own data.
 const SUPABASE_URL  = 'https://ahlykwcpowwzpkbpcwrn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobHlrd2Nwb3d3enBrYnBjd3JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MDY5NzcsImV4cCI6MjA5MDI4Mjk3N30.XRh-JWWAOClUozW6UWJlRPbfTAt2bGeuD__HTiyVs8A';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -522,6 +543,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 
 const WORKER_URL = 'https://broad-cell-efb3.jeremyjansenalgo.workers.dev';
 
+// ── STATE ──────────────────────────────────────────────────────
 let paperText    = '';
 let paperName    = '';
 let chatHistory  = [];
@@ -532,6 +554,7 @@ let currentUser  = null; // Supabase user object
 let compareSlots = { A: { name: '', text: '' }, B: { name: '', text: '' } };
 let compareLoading = false;
 
+// ── DOM REFS ───────────────────────────────────────────────────
 const authScreen   = document.getElementById('authScreen');
 const authError    = document.getElementById('authError');
 const authSuccess  = document.getElementById('authSuccess');
@@ -580,6 +603,11 @@ const cmpBtns = {
   table:    document.getElementById('cmpTable'),
 };
 
+// ══════════════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════════════
+
+// Auth tab switching
 document.getElementById('authTabLogin').addEventListener('click', () => {
   document.getElementById('authTabLogin').classList.add('active');
   document.getElementById('authTabRegister').classList.remove('active');
@@ -595,6 +623,7 @@ document.getElementById('authTabRegister').addEventListener('click', () => {
   authError.textContent = ''; authSuccess.textContent = '';
 });
 
+// Email/password login
 document.getElementById('loginBtn').addEventListener('click', async () => {
   const email    = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
@@ -609,8 +638,10 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     document.getElementById('loginBtn').disabled = false;
     document.getElementById('loginBtn').textContent = 'Sign In';
   }
+  // If success, onAuthStateChange fires and handles the rest
 });
 
+// Email/password register
 document.getElementById('registerBtn').addEventListener('click', async () => {
   const email    = document.getElementById('registerEmail').value.trim();
   const password = document.getElementById('registerPassword').value;
@@ -630,6 +661,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   document.getElementById('registerBtn').textContent = 'Create Account';
 });
 
+// Google login
 document.getElementById('googleBtn').addEventListener('click', async () => {
   await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -637,29 +669,37 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
   });
 });
 
+// Logout — clicking the user button logs out
 userBtn.addEventListener('click', async () => {
   if (confirm('Sign out of Kalypto?')) {
     await supabase.auth.signOut();
   }
 });
 
+// ── AUTH STATE LISTENER ────────────────────────────────────────
+// This fires whenever login/logout happens.
+// It's the central handler for showing/hiding the auth screen.
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
+    // User is logged in
     currentUser = session.user;
     authScreen.classList.add('hidden');
 
+    // Show user email in header (truncated)
     const email = session.user.email || 'Logged in';
     userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
     userBtn.style.display = 'flex';
 
+    // Load their chats from Supabase
     await loadChatsFromSupabase();
 
-  } 
-  else {
+  } else {
+    // User is logged out
     currentUser = null;
     authScreen.classList.remove('hidden');
     userBtn.style.display = 'none';
 
+    // Reset all state
     paperText = ''; paperName = ''; chatHistory = []; activeChatId = null;
     clearMessagesUI();
     paperCard.classList.remove('visible');
@@ -673,9 +713,17 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
+// ══════════════════════════════════════════════════════════════
+//  SUPABASE CHAT STORAGE
+//  Replaces localStorage with Supabase database calls.
+//  Each chat row: id, user_id, paper_name, paper_text,
+//                 history (jsonb), preview, updated_at
+// ══════════════════════════════════════════════════════════════
+
 function showSync() { syncDot.classList.add('syncing'); }
 function hideSync() { syncDot.classList.remove('syncing'); }
 
+// Load all chats for the current user from Supabase
 async function loadChatsFromSupabase() {
   if (!currentUser) return [];
   showSync();
@@ -691,6 +739,7 @@ async function loadChatsFromSupabase() {
 
   renderChatList(data || []);
 
+  // Restore last active chat
   const lastId = localStorage.getItem('kalypto_active_chat');
   const chats  = data || [];
   if (lastId && chats.find(c => c.id === lastId)) {
@@ -706,6 +755,8 @@ async function loadChatsFromSupabase() {
 
   return chats;
 }
+
+// Save current chat to Supabase (upsert = insert or update)
 async function saveCurrentChat() {
   if (!activeChatId || !currentUser) return;
   showSync();
@@ -724,6 +775,7 @@ async function saveCurrentChat() {
   hideSync();
   if (error) console.error('Save chat error:', error);
 
+  // Refresh the sidebar list
   const { data } = await supabase
     .from('chats')
     .select('*')
@@ -732,6 +784,7 @@ async function saveCurrentChat() {
   renderChatList(data || []);
 }
 
+// Delete a chat from Supabase
 async function deleteChatFromSupabase(chatId) {
   if (!currentUser) return;
   showSync();
@@ -740,6 +793,7 @@ async function deleteChatFromSupabase(chatId) {
   if (error) console.error('Delete chat error:', error);
 }
 
+// Restore UI from a chat row object
 function restoreChat(chat) {
   paperText   = chat.paper_text  || '';
   paperName   = chat.paper_name  || '';
@@ -794,6 +848,7 @@ async function switchToChat(chatId) {
 
   if (data) restoreChat(data);
 
+  // Refresh list to update active highlight
   const { data: all } = await supabase
     .from('chats')
     .select('*')
@@ -844,6 +899,9 @@ function clearMessagesUI() {
   emptyState.style.display = '';
 }
 
+// ══════════════════════════════════════════════════════════════
+//  MODE SWITCHING
+// ══════════════════════════════════════════════════════════════
 document.getElementById('modeChatBtn').addEventListener('click', () => setMode('chat'));
 document.getElementById('modeCompareBtn').addEventListener('click', () => setMode('compare'));
 
@@ -866,6 +924,9 @@ function setMode(mode) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+//  COMPARE SLOTS
+// ══════════════════════════════════════════════════════════════
 async function populatePickLists() {
   if (!currentUser) return;
   const { data: chats } = await supabase
@@ -948,6 +1009,9 @@ document.getElementById('slotClearB').addEventListener('click', () => clearSlot(
 document.getElementById('slotPickBtnA').addEventListener('click', () => { populatePickLists(); document.getElementById('slotPickListA').classList.toggle('open'); });
 document.getElementById('slotPickBtnB').addEventListener('click', () => { populatePickLists(); document.getElementById('slotPickListB').classList.toggle('open'); });
 
+// ══════════════════════════════════════════════════════════════
+//  COMPARE AI
+// ══════════════════════════════════════════════════════════════
 function buildCompareSystemPrompt() {
   return `You are Kalypto, an AI research assistant specializing in comparing academic papers.
 Always refer to them as "Paper A" and "Paper B". Be clear, structured, and educational.
@@ -982,15 +1046,20 @@ function addCompareMessage(text) { compareEmpty.style.display = 'none'; const d 
 function addCompareUserMessage(text) { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message user'; d.style.maxWidth = '100%'; d.textContent = text; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; }
 function addCompareLoading() { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message ai loading'; d.style.maxWidth = '100%'; d.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; return d; }
 
+// ══════════════════════════════════════════════════════════════
+//  MOBILE SIDEBAR
+// ══════════════════════════════════════════════════════════════
 function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('visible'); document.body.style.overflow = 'hidden'; }
 function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow = ''; }
 function closeSidebarOnMobile() { if (window.innerWidth <= 768) closeSidebar(); }
 menuBtn.addEventListener('click', openSidebar);
 overlay.addEventListener('click', closeSidebar);
 
+// ── TAB SWITCHING ──────────────────────────────────────────────
 document.getElementById('tabUpload').addEventListener('click', () => { document.getElementById('tabUpload').classList.add('active'); document.getElementById('tabUrl').classList.remove('active'); document.getElementById('panelUpload').classList.add('active'); document.getElementById('panelUrl').classList.remove('active'); });
 document.getElementById('tabUrl').addEventListener('click', () => { document.getElementById('tabUrl').classList.add('active'); document.getElementById('tabUpload').classList.remove('active'); document.getElementById('panelUrl').classList.add('active'); document.getElementById('panelUpload').classList.remove('active'); });
 
+// ── URL FETCHING ───────────────────────────────────────────────
 function normalizeArxivUrl(url) { const m = url.match(/arxiv\.org\/(?:abs|pdf)\/([^\s?#]+)/i); return m ? `https://arxiv.org/pdf/${m[1]}` : null; }
 async function loadFromUrl() {
   const raw = urlInput.value.trim(); if (!raw) return;
@@ -1011,6 +1080,7 @@ async function loadFromUrl() {
 urlFetchBtn.addEventListener('click', loadFromUrl);
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrl(); });
 
+// ── PDF PARSING ────────────────────────────────────────────────
 async function parsePDFBuffer(arrayBuffer, displayName) {
   if (chatHistory.length > 0) {
     await saveCurrentChat();
@@ -1044,6 +1114,7 @@ dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classL
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f && f.type === 'application/pdf') loadPDF(f); });
 
+// ── CHAT MESSAGING ─────────────────────────────────────────────
 async function sendMessage(overrideText) {
   const text = (overrideText || userInput.value).trim(); if (!text || isLoading) return;
   addMessage('user', text); userInput.value = ''; userInput.style.height = 'auto';
@@ -1104,6 +1175,7 @@ function formatText(text) {
     .replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>').replace(/^(.+)$/, '<p>$1</p>');
 }
 
+// ── EVENT LISTENERS ────────────────────────────────────────────
 newChatBtn.addEventListener('click', createNewChat);
 quickBtns.summarize.addEventListener('click', () => { sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.'); closeSidebarOnMobile(); });
 quickBtns.methods.addEventListener('click', () => { sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?'); closeSidebarOnMobile(); });
@@ -1113,6 +1185,8 @@ quickBtns.flash.addEventListener('click', () => { sendMessage('Create 8 flashcar
 userInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 userInput.addEventListener('input', () => { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px'; });
 sendBtn.addEventListener('click', () => sendMessage());
+
+// ── THEME ──────────────────────────────────────────────────────
 const themeToggle = document.getElementById('themeToggle');
 function applyTheme(t) { if (t==='light') { document.body.classList.add('light'); themeToggle.textContent = '🌙 Dark'; } else { document.body.classList.remove('light'); themeToggle.textContent = '☀ Light'; } }
 applyTheme(localStorage.getItem('kalypto_theme') || 'dark');
