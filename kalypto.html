@@ -811,7 +811,12 @@ async function createNewChat() {
   sendBtn.disabled = true;
   Object.values(quickBtns).forEach(btn => btn.disabled = true);
   chatHeader.innerHTML = 'No paper loaded';
-  await saveCurrentChat();
+  // Refresh sidebar without saving a blank row
+  const { data } = await supabase
+  .from('chats').select('*')
+  .eq('user_id', currentUser.id)
+  .order('updated_at', { ascending: false });
+  renderChatList(data || []);
   closeSidebarOnMobile();
 }
 
