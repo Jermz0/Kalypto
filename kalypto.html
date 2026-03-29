@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kalypto — AI Research Assistant</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <!-- FIX #2: Added Inter to the Google Fonts import -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
@@ -22,7 +23,7 @@
       --user-bg:   #1a1a2e;
       --ai-bg:     #111118;
       --font-head: 'Syne', sans-serif;
-      --font-body: 'Inter', sans-serif;
+      --font-body: 'Inter', monospace; /* FIX #2: Inter is now actually loaded */
       --radius:    12px;
     }
     body.light {
@@ -228,18 +229,15 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════ AUTH SCREEN ═══════════════════════════════ -->
+<!-- AUTH SCREEN -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">Kaly<span>pto</span></div>
     <p class="auth-tagline">AI-powered research assistant</p>
-
     <div class="auth-tabs">
       <button class="auth-tab active" id="authTabLogin">Sign In</button>
       <button class="auth-tab" id="authTabRegister">Create Account</button>
     </div>
-
-    <!-- Login Form -->
     <div id="authLoginForm">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="auth-field">
@@ -253,8 +251,6 @@
         <button class="auth-submit" id="loginBtn">Sign In</button>
       </div>
     </div>
-
-    <!-- Register Form -->
     <div id="authRegisterForm" style="display:none">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="auth-field">
@@ -268,12 +264,9 @@
         <button class="auth-submit" id="registerBtn">Create Account</button>
       </div>
     </div>
-
     <div class="auth-error" id="authError"></div>
     <div class="auth-success" id="authSuccess"></div>
-
     <div class="auth-divider">or</div>
-
     <button class="auth-google" id="googleBtn">
       <svg width="16" height="16" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -288,7 +281,7 @@
 
 <div class="overlay" id="overlay"></div>
 
-<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<!-- HEADER -->
 <header>
   <div class="header-left">
     <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
@@ -308,7 +301,7 @@
   </div>
 </header>
 
-<!-- ═══════════════════════════════ APP BODY ═══════════════════════════════ -->
+<!-- APP BODY -->
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
@@ -453,6 +446,7 @@ let currentMode    = 'chat';
 let currentUser    = null;
 let compareSlots   = { A: { name: '', text: '' }, B: { name: '', text: '' } };
 let compareLoading = false;
+let compareHistory = []; // FIX #6: conversation memory for compare mode
 
 // ═══════════════════════════════════════════════════════════
 // DOM REFERENCES
@@ -527,24 +521,17 @@ document.getElementById('authTabRegister').addEventListener('click', () => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// AUTH — SIGN IN  ← FIX: try/catch + always re-enable button
+// AUTH — SIGN IN
 // ═══════════════════════════════════════════════════════════
 document.getElementById('loginBtn').addEventListener('click', async () => {
   const email    = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-
   authError.textContent   = '';
   authSuccess.textContent = '';
-
-  if (!email || !password) {
-    authError.textContent = 'Please fill in both fields.';
-    return;
-  }
-
+  if (!email || !password) { authError.textContent = 'Please fill in both fields.'; return; }
   const btn = document.getElementById('loginBtn');
   btn.disabled    = true;
   btn.textContent = 'Signing in…';
-
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
@@ -552,8 +539,6 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
       btn.disabled    = false;
       btn.textContent = 'Sign In';
     }
-    // On success: onAuthStateChange fires → hides authScreen automatically.
-    // DO NOT re-enable the button on success — the screen will disappear.
   } catch (err) {
     authError.textContent = 'Unexpected error. Please try again.';
     btn.disabled    = false;
@@ -561,43 +546,29 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
   }
 });
 
-// Allow Enter key in password field to trigger login
 document.getElementById('loginPassword').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('loginBtn').click();
 });
 
 // ═══════════════════════════════════════════════════════════
-// AUTH — CREATE ACCOUNT  ← FIX: always re-enable + clear state
+// AUTH — CREATE ACCOUNT
 // ═══════════════════════════════════════════════════════════
 document.getElementById('registerBtn').addEventListener('click', async () => {
   const email    = document.getElementById('registerEmail').value.trim();
   const password = document.getElementById('registerPassword').value;
-
   authError.textContent   = '';
   authSuccess.textContent = '';
-
-  if (!email || !password) {
-    authError.textContent = 'Please fill in both fields.';
-    return;
-  }
-  if (password.length < 6) {
-    authError.textContent = 'Password must be at least 6 characters.';
-    return;
-  }
-
+  if (!email || !password) { authError.textContent = 'Please fill in both fields.'; return; }
+  if (password.length < 6) { authError.textContent = 'Password must be at least 6 characters.'; return; }
   const btn = document.getElementById('registerBtn');
   btn.disabled    = true;
   btn.textContent = 'Creating account…';
-
   try {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       authError.textContent = error.message;
     } else {
-      // Check if the user was auto-confirmed (no email confirmation required)
-      // Some Supabase projects have "Confirm email" disabled — user is logged in immediately
       if (data.session) {
-        // Already logged in — onAuthStateChange will handle UI update
         authSuccess.textContent = '✓ Account created! Logging you in…';
       } else {
         authSuccess.textContent = '✓ Account created! Check your email to confirm, then sign in.';
@@ -630,6 +601,7 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
 
 // ═══════════════════════════════════════════════════════════
 // AUTH — SIGN OUT
+// FIX #9: saveCurrentChat() before signing out
 // ═══════════════════════════════════════════════════════════
 let signOutPending = false;
 userBtn.addEventListener('click', async () => {
@@ -648,38 +620,32 @@ userBtn.addEventListener('click', async () => {
       }
     }, 3000);
   } else {
+    await saveCurrentChat(); // FIX #9: persist last state before clearing session
     await supabase.auth.signOut();
   }
 });
 
 // ═══════════════════════════════════════════════════════════
-// AUTH STATE LISTENER  ← FIX: wrapped in try/catch so errors
-//   in loadChatsFromSupabase don't silently block the UI
+// AUTH STATE LISTENER
 // ═══════════════════════════════════════════════════════════
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
     authScreen.classList.add('hidden');
-
     const email = session.user.email || 'Logged in';
     userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
     userBtn.style.display = 'flex';
-
     try {
       await loadChatsFromSupabase();
     } catch (err) {
       console.error('Error loading chats after login:', err);
-      // App still works — user just starts with empty state
       activeChatId = 'chat_' + Date.now();
     }
-
   } else {
     currentUser  = null;
     activeChatId = null;
     authScreen.classList.remove('hidden');
     userBtn.style.display = 'none';
-
-    // Reset all UI state
     paperText = ''; paperName = ''; chatHistory = [];
     clearMessagesUI();
     paperCard.classList.remove('visible');
@@ -690,8 +656,6 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     chatHeader.innerHTML = 'No paper loaded';
     chatList.querySelectorAll('.chat-entry').forEach(e => e.remove());
     noChats.style.display = 'block';
-
-    // Re-enable login button in case it was stuck
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.disabled    = false;
     loginBtn.textContent = 'Sign In';
@@ -710,19 +674,15 @@ function hideSync() { syncDot.classList.remove('syncing'); }
 async function loadChatsFromSupabase() {
   if (!currentUser) return [];
   showSync();
-
   const { data, error } = await supabase
     .from('chats')
     .select('*')
     .eq('user_id', currentUser.id)
     .order('updated_at', { ascending: false });
-
   hideSync();
   if (error) { console.error('Load chats error:', error); return []; }
-
   const chats = data || [];
   renderChatList(chats);
-
   const lastId = localStorage.getItem('kalypto_active_chat');
   if (lastId && chats.find(c => c.id === lastId)) {
     activeChatId = lastId;
@@ -734,14 +694,15 @@ async function loadChatsFromSupabase() {
     activeChatId = 'chat_' + Date.now();
     localStorage.setItem('kalypto_active_chat', activeChatId);
   }
-
   return chats;
 }
 
 async function saveCurrentChat() {
   if (!activeChatId || !currentUser) return;
-  showSync();
+  // FIX #3: don't save blank rows when there's nothing to persist
+  if (!paperName && chatHistory.length === 0) return;
 
+  showSync();
   const row = {
     id:         activeChatId,
     user_id:    currentUser.id,
@@ -751,12 +712,9 @@ async function saveCurrentChat() {
     preview:    chatHistory.find(m => m.role === 'user')?.content?.slice(0, 60) || 'No messages yet',
     updated_at: new Date().toISOString()
   };
-
   const { error } = await supabase.from('chats').upsert(row);
   hideSync();
   if (error) console.error('Save chat error:', error);
-
-  // Refresh sidebar list
   const { data } = await supabase
     .from('chats').select('*')
     .eq('user_id', currentUser.id)
@@ -780,7 +738,6 @@ function restoreChat(chat) {
   activeChatId = chat.id;
   localStorage.setItem('kalypto_active_chat', chat.id);
   clearMessagesUI();
-
   if (paperName) {
     paperTitle.textContent = paperName;
     paperMeta.textContent  = 'Restored from saved chat';
@@ -791,7 +748,6 @@ function restoreChat(chat) {
     Object.values(quickBtns).forEach(btn => btn.disabled = false);
     chatHeader.innerHTML = `Paper: <span>${paperName}</span>`;
   }
-
   if (chatHistory.length > 0) {
     emptyState.style.display = 'none';
     chatHistory.forEach(msg => renderMessage(msg.role, msg.content, false));
@@ -811,26 +767,36 @@ async function createNewChat() {
   sendBtn.disabled = true;
   Object.values(quickBtns).forEach(btn => btn.disabled = true);
   chatHeader.innerHTML = 'No paper loaded';
-  // Refresh sidebar without saving a blank row
+
   const { data } = await supabase
-  .from('chats').select('*')
-  .eq('user_id', currentUser.id)
-  .order('updated_at', { ascending: false });
+    .from('chats').select('*')
+    .eq('user_id', currentUser.id)
+    .order('updated_at', { ascending: false });
   renderChatList(data || []);
+
+  // FIX #8: inject a placeholder entry so the new chat is visually highlighted
+  noChats.style.display = 'none';
+  const placeholder = document.createElement('div');
+  placeholder.className = 'chat-entry active';
+  placeholder.id = 'new-chat-placeholder';
+  placeholder.innerHTML = `
+    <div class="chat-entry-info">
+      <div class="chat-entry-paper" style="color:var(--muted)">New chat</div>
+      <div class="chat-entry-preview">Upload a paper to begin</div>
+    </div>`;
+  chatList.insertBefore(placeholder, chatList.firstChild);
+
   closeSidebarOnMobile();
 }
 
 async function switchToChat(chatId) {
   if (chatId === activeChatId) return;
   await saveCurrentChat();
-
   const { data } = await supabase
     .from('chats').select('*')
     .eq('id', chatId).eq('user_id', currentUser.id)
     .single();
-
   if (data) restoreChat(data);
-
   const { data: all } = await supabase
     .from('chats').select('*')
     .eq('user_id', currentUser.id)
@@ -843,7 +809,6 @@ async function deleteChat(chatId, e) {
   e.stopPropagation();
   await deleteChatFromSupabase(chatId);
   if (chatId === activeChatId) createNewChat();
-
   const { data } = await supabase
     .from('chats').select('*')
     .eq('user_id', currentUser.id)
@@ -915,9 +880,8 @@ async function populatePickLists() {
     .from('chats').select('*')
     .eq('user_id', currentUser.id)
     .order('updated_at', { ascending: false });
-
   ['A', 'B'].forEach(slot => {
-    const list  = document.getElementById(`slotPickList${slot}`);
+    const list = document.getElementById(`slotPickList${slot}`);
     list.innerHTML = '';
     const valid = (chats || []).filter(c => c.paper_text);
     if (valid.length === 0) {
@@ -948,6 +912,7 @@ function showSlotCard(slot, name, meta) {
 
 function clearSlot(slot) {
   compareSlots[slot] = { name: '', text: '' };
+  compareHistory = []; // FIX #6: reset conversation history when a slot changes
   document.getElementById(`slotCard${slot}`).classList.remove('visible');
   document.getElementById(`slotUpload${slot}`).style.display = '';
   updateCompareButtons();
@@ -984,8 +949,17 @@ async function loadSlotPDF(slot, file) {
   }
 }
 
-document.getElementById('slotFileA').addEventListener('change', e => { const f = e.target.files[0]; if (f) loadSlotPDF('A', f); });
-document.getElementById('slotFileB').addEventListener('change', e => { const f = e.target.files[0]; if (f) loadSlotPDF('B', f); });
+// FIX #7: reset value so the same file can be re-selected
+document.getElementById('slotFileA').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) loadSlotPDF('A', f);
+  e.target.value = '';
+});
+document.getElementById('slotFileB').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) loadSlotPDF('B', f);
+  e.target.value = '';
+});
 
 ['A', 'B'].forEach(slot => {
   const drop = document.getElementById(`slotDrop${slot}`);
@@ -1011,6 +985,7 @@ PAPER B — ${compareSlots.B.name}:
 ${compareSlots.B.text}`;
 }
 
+// FIX #6: compare mode now maintains full conversation history
 async function sendCompareMessage(promptText, showAsUserMessage = true) {
   if (!compareSlots.A.text || !compareSlots.B.text) { addCompareMessage('⚠️ Please load both papers first.'); return; }
   if (compareLoading) return;
@@ -1019,6 +994,9 @@ async function sendCompareMessage(promptText, showAsUserMessage = true) {
   compareSendBtn.disabled = true;
   Object.values(cmpBtns).forEach(btn => btn.disabled = true);
   const lm = addCompareLoading();
+
+  compareHistory.push({ role: 'user', content: promptText });
+
   try {
     const res = await fetch(WORKER_URL, {
       method: 'POST',
@@ -1028,16 +1006,24 @@ async function sendCompareMessage(promptText, showAsUserMessage = true) {
         max_tokens: 2048,
         messages: [
           { role: 'system', content: buildCompareSystemPrompt() },
-          { role: 'user', content: promptText }
+          ...compareHistory
         ]
       })
     });
     const data = await res.json();
     lm.remove();
-    addCompareMessage(data.error ? `⚠️ ${data.error.message}` : (data.choices?.[0]?.message?.content || 'No response.'));
+    if (data.error) {
+      addCompareMessage(`⚠️ ${data.error.message}`);
+      compareHistory.pop(); // undo push on error
+    } else {
+      const reply = data.choices?.[0]?.message?.content || 'No response.';
+      addCompareMessage(reply);
+      compareHistory.push({ role: 'assistant', content: reply });
+    }
   } catch (err) {
     lm.remove();
     addCompareMessage(`⚠️ ${err.message}`);
+    compareHistory.pop(); // undo push on error
   }
   compareLoading = false;
   compareSendBtn.disabled = false;
@@ -1060,8 +1046,8 @@ function addCompareLoading()         { compareEmpty.style.display = 'none'; cons
 // ═══════════════════════════════════════════════════════════
 // MOBILE SIDEBAR
 // ═══════════════════════════════════════════════════════════
-function openSidebar()        { sidebar.classList.add('open'); overlay.classList.add('visible'); document.body.style.overflow = 'hidden'; }
-function closeSidebar()       { sidebar.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow = ''; }
+function openSidebar()          { sidebar.classList.add('open'); overlay.classList.add('visible'); document.body.style.overflow = 'hidden'; }
+function closeSidebar()         { sidebar.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow = ''; }
 function closeSidebarOnMobile() { if (window.innerWidth <= 768) closeSidebar(); }
 menuBtn.addEventListener('click', openSidebar);
 overlay.addEventListener('click', closeSidebar);
@@ -1084,6 +1070,7 @@ document.getElementById('tabUrl').addEventListener('click', () => {
 
 // ═══════════════════════════════════════════════════════════
 // URL FETCH
+// FIX #1: proxy through Cloudflare Worker to bypass CORS
 // ═══════════════════════════════════════════════════════════
 function normalizeArxivUrl(url) {
   const m = url.match(/arxiv\.org\/(?:abs|pdf)\/([^\s?#]+)/i);
@@ -1109,8 +1096,18 @@ async function loadFromUrl() {
 
   try {
     progressWrap.classList.add('visible'); progressBar.style.width = '20%';
-    const res = await fetch(pdfUrl);
-    if (!res.ok) throw new Error(`Could not fetch PDF (${res.status}).`);
+
+    // FIX #1: route through Worker instead of fetching directly (avoids CORS)
+    const res = await fetch(WORKER_URL + '/fetch-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: pdfUrl })
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Could not fetch PDF (${res.status}).`);
+    }
+
     progressBar.style.width = '50%';
     const buf = await res.arrayBuffer();
     const parts = pdfUrl.split('/');
@@ -1132,6 +1129,9 @@ urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrl()
 // PDF PARSING
 // ═══════════════════════════════════════════════════════════
 async function parsePDFBuffer(arrayBuffer, displayName) {
+  // FIX #8: remove the new-chat placeholder once a paper is actually loaded
+  document.getElementById('new-chat-placeholder')?.remove();
+
   if (chatHistory.length > 0) {
     await saveCurrentChat();
     activeChatId = 'chat_' + Date.now();
@@ -1163,7 +1163,11 @@ async function parsePDFBuffer(arrayBuffer, displayName) {
     sendBtn.disabled = false;
     Object.values(quickBtns).forEach(btn => btn.disabled = false);
 
-    addMessage('ai', `**Paper loaded:** ${paperName}\n\nI've read through the document. Ask me anything about it, or use the quick actions on the left.`);
+    // FIX #4: push welcome message to chatHistory so it persists on restore
+    const welcomeMsg = `**Paper loaded:** ${paperName}\n\nI've read through the document. Ask me anything about it, or use the quick actions on the left.`;
+    chatHistory.push({ role: 'model', content: welcomeMsg });
+    addMessage('ai', welcomeMsg);
+
     await saveCurrentChat();
     closeSidebarOnMobile();
   } catch (err) {
@@ -1180,7 +1184,13 @@ async function loadPDF(file) {
   await parsePDFBuffer(buf, file.name);
 }
 
-fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f && f.type === 'application/pdf') loadPDF(f); });
+// FIX #7: reset value so the same file can be re-selected
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f && f.type === 'application/pdf') loadPDF(f);
+  e.target.value = '';
+});
+
 dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop',      e => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f && f.type === 'application/pdf') loadPDF(f); });
@@ -1241,7 +1251,6 @@ function renderMessage(role, text, animate = true) {
   const div = document.createElement('div');
   div.className = `message ${role === 'user' ? 'user' : 'ai'}`;
   if (!animate) div.style.animation = 'none';
-
   if (role !== 'user') {
     div.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}<div class="message-actions"><button class="copy-btn" data-copy="plain">📋 Copy text</button><button class="copy-btn" data-copy="markdown">{ } Copy markdown</button></div>`;
     div.dataset.raw = text;
@@ -1262,7 +1271,6 @@ function renderMessage(role, text, animate = true) {
   } else {
     div.textContent = text;
   }
-
   messagesDiv.appendChild(div);
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
   return div;
@@ -1280,6 +1288,7 @@ function addLoadingMessage() {
   return div;
 }
 
+// FIX #5: strip newlines between </li><li> before the global \n → <br> pass
 function formatText(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1299,6 +1308,7 @@ function formatText(text) {
         }</tr>`).join('')
       }</table></div>`;
     })
+    .replace(/<\/li>\n<li>/g, '</li><li>') // FIX #5: prevent <br> injection inside <ul>
     .replace(/\n\n/g, '</p><p>')
     .replace(/\n/g, '<br>')
     .replace(/^(.+)$/, '<p>$1</p>');
