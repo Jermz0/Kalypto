@@ -36,117 +36,36 @@
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
 
     .auth-screen {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      padding: 24px;
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999; padding: 24px;
     }
     .auth-screen.hidden { display: none; }
     .auth-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 40px 36px;
-      width: 100%;
-      max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 40px 36px; width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; gap: 20px;
     }
-    .auth-logo {
-      font-family: var(--font-head);
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--accent);
-      text-align: center;
-    }
+    .auth-logo { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--accent); text-align: center; }
     .auth-logo span { color: var(--text); }
     .auth-tagline { font-size: 12px; color: var(--muted); text-align: center; margin-top: -12px; }
-
     .auth-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
     .auth-tab { flex: 1; background: transparent; border: none; border-radius: 6px; padding: 8px; color: var(--muted); font-family: var(--font-body); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s; }
     .auth-tab.active { background: var(--surface2); color: var(--text); }
-
     .auth-field { display: flex; flex-direction: column; gap: 6px; }
     .auth-field label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-    .auth-input {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 11px 14px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 13px;
-      width: 100%;
-      transition: border-color 0.2s;
-    }
+    .auth-input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: var(--font-body); font-size: 13px; width: 100%; transition: border-color 0.2s; }
     .auth-input:focus { outline: none; border-color: var(--accent2); }
     .auth-input::placeholder { color: var(--muted); }
-
-    .auth-submit {
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      padding: 13px;
-      color: #fff;
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      width: 100%;
-      transition: opacity 0.2s;
-    }
+    .auth-submit { background: var(--accent); border: none; border-radius: 8px; padding: 13px; color: #fff; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; width: 100%; transition: opacity 0.2s; }
     .auth-submit:hover { opacity: 0.85; }
     .auth-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .auth-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 10px;
-      color: var(--muted);
-    }
-    .auth-divider::before, .auth-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .auth-google {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 11px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 12px;
-      cursor: pointer;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: border-color 0.2s;
-    }
+    .auth-divider { display: flex; align-items: center; gap: 12px; font-size: 10px; color: var(--muted); }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .auth-google { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px; color: var(--text); font-family: var(--font-body); font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; transition: border-color 0.2s; }
     .auth-google:hover { border-color: var(--accent2); }
-
-    .auth-error {
-      font-size: 11px;
-      color: var(--danger);
-      text-align: center;
-      min-height: 16px;
-    }
-    .auth-success {
-      font-size: 11px;
-      color: var(--accent2);
-      text-align: center;
-      min-height: 16px;
-    }
+    .auth-error { font-size: 11px; color: var(--danger); text-align: center; min-height: 16px; }
+    .auth-success { font-size: 11px; color: var(--accent2); text-align: center; min-height: 16px; }
 
     header { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; position: relative; z-index: 100; gap: 12px; }
     .header-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
@@ -160,25 +79,7 @@
     .menu-btn span { display: block; width: 16px; height: 2px; background: var(--text); border-radius: 2px; }
     .status-pill { font-size: 11px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.5px; white-space: nowrap; }
     .status-pill.has-paper { border-color: var(--accent); color: var(--accent); }
-
-    .user-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 4px 12px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 11px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: border-color 0.2s;
-      white-space: nowrap;
-      max-width: 160px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .user-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; color: var(--text); font-family: var(--font-body); font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s; white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
     .user-btn:hover { border-color: var(--danger); color: var(--danger); }
 
     .app { display: flex; flex: 1; height: calc(100vh - 57px); overflow: hidden; }
@@ -310,7 +211,6 @@
     .message.ai code { background: rgba(124,255,178,0.08); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; opacity: 0; transition: opacity 0.3s ease; }
     .overlay.visible { display: block; opacity: 1; }
-
     .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); display: inline-block; margin-left: 4px; opacity: 0; transition: opacity 0.3s; }
     .sync-dot.syncing { opacity: 1; animation: pulse 1s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
@@ -327,37 +227,43 @@
   </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════════ AUTH SCREEN ═══════════════════════════════ -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">Kaly<span>pto</span></div>
     <p class="auth-tagline">AI-powered research assistant</p>
+
     <div class="auth-tabs">
       <button class="auth-tab active" id="authTabLogin">Sign In</button>
       <button class="auth-tab" id="authTabRegister">Create Account</button>
     </div>
+
+    <!-- Login Form -->
     <div id="authLoginForm">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="auth-field">
           <label>Email</label>
-          <input type="email" class="auth-input" id="loginEmail" placeholder="you@email.com"/>
+          <input type="email" class="auth-input" id="loginEmail" placeholder="you@email.com" autocomplete="email"/>
         </div>
         <div class="auth-field">
           <label>Password</label>
-          <input type="password" class="auth-input" id="loginPassword" placeholder="••••••••"/>
+          <input type="password" class="auth-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
         </div>
         <button class="auth-submit" id="loginBtn">Sign In</button>
       </div>
     </div>
 
+    <!-- Register Form -->
     <div id="authRegisterForm" style="display:none">
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="auth-field">
           <label>Email</label>
-          <input type="email" class="auth-input" id="registerEmail" placeholder="you@email.com"/>
+          <input type="email" class="auth-input" id="registerEmail" placeholder="you@email.com" autocomplete="email"/>
         </div>
         <div class="auth-field">
           <label>Password</label>
-          <input type="password" class="auth-input" id="registerPassword" placeholder="At least 6 characters"/>
+          <input type="password" class="auth-input" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password"/>
         </div>
         <button class="auth-submit" id="registerBtn">Create Account</button>
       </div>
@@ -382,6 +288,7 @@
 
 <div class="overlay" id="overlay"></div>
 
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
 <header>
   <div class="header-left">
     <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
@@ -401,6 +308,7 @@
   </div>
 </header>
 
+<!-- ═══════════════════════════════ APP BODY ═══════════════════════════════ -->
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
@@ -415,7 +323,7 @@
           <div class="drop-zone" id="dropZone">
             <input type="file" id="fileInput" accept=".pdf"/>
             <span class="drop-icon">📄</span>
-            <div class="drop-text"><strong>Upload a PDF</strong>Click or drag & drop</div>
+            <div class="drop-text"><strong>Upload a PDF</strong>Click or drag &amp; drop</div>
           </div>
         </div>
         <div class="tab-panel" id="panelUrl">
@@ -436,7 +344,7 @@
         <div class="quick-actions">
           <button class="quick-btn" id="btnSummarize" disabled>📋 Summarize this paper</button>
           <button class="quick-btn" id="btnMethods"   disabled>🔬 Explain the methodology</button>
-          <button class="quick-btn" id="btnFindings"  disabled>💡 Key findings & conclusions</button>
+          <button class="quick-btn" id="btnFindings"  disabled>💡 Key findings &amp; conclusions</button>
           <button class="quick-btn" id="btnQuiz"      disabled>🧠 Generate study questions</button>
           <button class="quick-btn" id="btnFlash"     disabled>⚡ Make flashcard points</button>
         </div>
@@ -469,7 +377,11 @@
     <div class="compare-top">
       <div class="paper-slot">
         <div class="slot-label">Paper A <span>A</span></div>
-        <div class="slot-paper-card" id="slotCardA"><div class="slot-paper-name" id="slotNameA">—</div><div class="slot-paper-meta" id="slotMetaA">—</div><button class="slot-clear-btn" id="slotClearA">✕ Remove</button></div>
+        <div class="slot-paper-card" id="slotCardA">
+          <div class="slot-paper-name" id="slotNameA">—</div>
+          <div class="slot-paper-meta" id="slotMetaA">—</div>
+          <button class="slot-clear-btn" id="slotClearA">✕ Remove</button>
+        </div>
         <div class="slot-upload" id="slotUploadA">
           <div class="slot-drop" id="slotDropA"><input type="file" id="slotFileA" accept=".pdf"/>📄 Upload PDF</div>
           <div class="slot-or">— or —</div>
@@ -480,7 +392,11 @@
       </div>
       <div class="paper-slot">
         <div class="slot-label">Paper B <span style="background:var(--accent);color:#fff">B</span></div>
-        <div class="slot-paper-card" id="slotCardB"><div class="slot-paper-name" id="slotNameB">—</div><div class="slot-paper-meta" id="slotMetaB">—</div><button class="slot-clear-btn" id="slotClearB">✕ Remove</button></div>
+        <div class="slot-paper-card" id="slotCardB">
+          <div class="slot-paper-name" id="slotNameB">—</div>
+          <div class="slot-paper-meta" id="slotMetaB">—</div>
+          <button class="slot-clear-btn" id="slotClearB">✕ Remove</button>
+        </div>
         <div class="slot-upload" id="slotUploadB">
           <div class="slot-drop" id="slotDropB"><input type="file" id="slotFileB" accept=".pdf"/>📄 Upload PDF</div>
           <div class="slot-or">— or —</div>
@@ -513,6 +429,9 @@
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://ahlykwcpowwzpkbpcwrn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobHlrd2Nwb3d3enBrYnBjd3JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MDY5NzcsImV4cCI6MjA5MDI4Mjk3N30.XRh-JWWAOClUozW6UWJlRPbfTAt2bGeuD__HTiyVs8A';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -522,16 +441,22 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 
 const WORKER_URL = 'https://broad-cell-efb3.jeremyjansenalgo.workers.dev';
 
-let paperText    = '';
-let paperName    = '';
-let chatHistory  = [];
-let isLoading    = false;
-let activeChatId = null;
-let currentMode  = 'chat';
-let currentUser  = null; // Supabase user object
-let compareSlots = { A: { name: '', text: '' }, B: { name: '', text: '' } };
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let paperText      = '';
+let paperName      = '';
+let chatHistory    = [];
+let isLoading      = false;
+let activeChatId   = null;
+let currentMode    = 'chat';
+let currentUser    = null;
+let compareSlots   = { A: { name: '', text: '' }, B: { name: '', text: '' } };
 let compareLoading = false;
 
+// ═══════════════════════════════════════════════════════════
+// DOM REFERENCES
+// ═══════════════════════════════════════════════════════════
 const authScreen   = document.getElementById('authScreen');
 const authError    = document.getElementById('authError');
 const authSuccess  = document.getElementById('authSuccess');
@@ -580,69 +505,142 @@ const cmpBtns = {
   table:    document.getElementById('cmpTable'),
 };
 
+// ═══════════════════════════════════════════════════════════
+// AUTH — TAB SWITCHING
+// ═══════════════════════════════════════════════════════════
 document.getElementById('authTabLogin').addEventListener('click', () => {
   document.getElementById('authTabLogin').classList.add('active');
   document.getElementById('authTabRegister').classList.remove('active');
   document.getElementById('authLoginForm').style.display = '';
   document.getElementById('authRegisterForm').style.display = 'none';
-  authError.textContent = ''; authSuccess.textContent = '';
+  authError.textContent = '';
+  authSuccess.textContent = '';
 });
+
 document.getElementById('authTabRegister').addEventListener('click', () => {
   document.getElementById('authTabRegister').classList.add('active');
   document.getElementById('authTabLogin').classList.remove('active');
   document.getElementById('authRegisterForm').style.display = '';
   document.getElementById('authLoginForm').style.display = 'none';
-  authError.textContent = ''; authSuccess.textContent = '';
+  authError.textContent = '';
+  authSuccess.textContent = '';
 });
 
+// ═══════════════════════════════════════════════════════════
+// AUTH — SIGN IN  ← FIX: try/catch + always re-enable button
+// ═══════════════════════════════════════════════════════════
 document.getElementById('loginBtn').addEventListener('click', async () => {
   const email    = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  if (!email || !password) { authError.textContent = 'Please fill in all fields.'; return; }
-  authError.textContent = '';
-  document.getElementById('loginBtn').disabled = true;
-  document.getElementById('loginBtn').textContent = 'Signing in...';
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    authError.textContent = error.message;
-    document.getElementById('loginBtn').disabled = false;
-    document.getElementById('loginBtn').textContent = 'Sign In';
+  authError.textContent   = '';
+  authSuccess.textContent = '';
+
+  if (!email || !password) {
+    authError.textContent = 'Please fill in both fields.';
+    return;
+  }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled    = true;
+  btn.textContent = 'Signing in…';
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      authError.textContent = error.message;
+      btn.disabled    = false;
+      btn.textContent = 'Sign In';
+    }
+    // On success: onAuthStateChange fires → hides authScreen automatically.
+    // DO NOT re-enable the button on success — the screen will disappear.
+  } catch (err) {
+    authError.textContent = 'Unexpected error. Please try again.';
+    btn.disabled    = false;
+    btn.textContent = 'Sign In';
   }
 });
 
+// Allow Enter key in password field to trigger login
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+// ═══════════════════════════════════════════════════════════
+// AUTH — CREATE ACCOUNT  ← FIX: always re-enable + clear state
+// ═══════════════════════════════════════════════════════════
 document.getElementById('registerBtn').addEventListener('click', async () => {
   const email    = document.getElementById('registerEmail').value.trim();
   const password = document.getElementById('registerPassword').value;
-  if (!email || !password) { authError.textContent = 'Please fill in all fields.'; return; }
-  if (password.length < 6) { authError.textContent = 'Password must be at least 6 characters.'; return; }
-  authError.textContent = '';
-  document.getElementById('registerBtn').disabled = true;
-  document.getElementById('registerBtn').textContent = 'Creating account...';
 
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (error) {
-    authError.textContent = error.message;
-  } else {
-    authSuccess.textContent = '✓ Account created! Check your email to confirm, then sign in.';
+  authError.textContent   = '';
+  authSuccess.textContent = '';
+
+  if (!email || !password) {
+    authError.textContent = 'Please fill in both fields.';
+    return;
   }
-  document.getElementById('registerBtn').disabled = false;
-  document.getElementById('registerBtn').textContent = 'Create Account';
+  if (password.length < 6) {
+    authError.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
+
+  const btn = document.getElementById('registerBtn');
+  btn.disabled    = true;
+  btn.textContent = 'Creating account…';
+
+  try {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      authError.textContent = error.message;
+    } else {
+      // Check if the user was auto-confirmed (no email confirmation required)
+      // Some Supabase projects have "Confirm email" disabled — user is logged in immediately
+      if (data.session) {
+        // Already logged in — onAuthStateChange will handle UI update
+        authSuccess.textContent = '✓ Account created! Logging you in…';
+      } else {
+        authSuccess.textContent = '✓ Account created! Check your email to confirm, then sign in.';
+        btn.disabled    = false;
+        btn.textContent = 'Create Account';
+      }
+    }
+  } catch (err) {
+    authError.textContent = 'Unexpected error. Please try again.';
+    btn.disabled    = false;
+    btn.textContent = 'Create Account';
+  }
 });
 
+// ═══════════════════════════════════════════════════════════
+// AUTH — GOOGLE OAuth
+// ═══════════════════════════════════════════════════════════
 document.getElementById('googleBtn').addEventListener('click', async () => {
-  await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.href }
-  });
+  authError.textContent = '';
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
+    });
+    if (error) authError.textContent = error.message;
+  } catch (err) {
+    authError.textContent = 'Could not open Google sign-in.';
+  }
 });
 
+// ═══════════════════════════════════════════════════════════
+// AUTH — SIGN OUT
+// ═══════════════════════════════════════════════════════════
 userBtn.addEventListener('click', async () => {
   if (confirm('Sign out of Kalypto?')) {
     await supabase.auth.signOut();
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// AUTH STATE LISTENER  ← FIX: wrapped in try/catch so errors
+//   in loadChatsFromSupabase don't silently block the UI
+// ═══════════════════════════════════════════════════════════
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     currentUser = session.user;
@@ -652,15 +650,22 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
     userBtn.style.display = 'flex';
 
-    await loadChatsFromSupabase();
+    try {
+      await loadChatsFromSupabase();
+    } catch (err) {
+      console.error('Error loading chats after login:', err);
+      // App still works — user just starts with empty state
+      activeChatId = 'chat_' + Date.now();
+    }
 
-  } 
-  else {
-    currentUser = null;
+  } else {
+    currentUser  = null;
+    activeChatId = null;
     authScreen.classList.remove('hidden');
     userBtn.style.display = 'none';
 
-    paperText = ''; paperName = ''; chatHistory = []; activeChatId = null;
+    // Reset all UI state
+    paperText = ''; paperName = ''; chatHistory = [];
     clearMessagesUI();
     paperCard.classList.remove('visible');
     statusPill.textContent = 'No paper loaded';
@@ -670,12 +675,23 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     chatHeader.innerHTML = 'No paper loaded';
     chatList.querySelectorAll('.chat-entry').forEach(e => e.remove());
     noChats.style.display = 'block';
+
+    // Re-enable login button in case it was stuck
+    const loginBtn = document.getElementById('loginBtn');
+    loginBtn.disabled    = false;
+    loginBtn.textContent = 'Sign In';
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// SYNC INDICATOR
+// ═══════════════════════════════════════════════════════════
 function showSync() { syncDot.classList.add('syncing'); }
 function hideSync() { syncDot.classList.remove('syncing'); }
 
+// ═══════════════════════════════════════════════════════════
+// SUPABASE CHAT OPERATIONS
+// ═══════════════════════════════════════════════════════════
 async function loadChatsFromSupabase() {
   if (!currentUser) return [];
   showSync();
@@ -689,10 +705,10 @@ async function loadChatsFromSupabase() {
   hideSync();
   if (error) { console.error('Load chats error:', error); return []; }
 
-  renderChatList(data || []);
+  const chats = data || [];
+  renderChatList(chats);
 
   const lastId = localStorage.getItem('kalypto_active_chat');
-  const chats  = data || [];
   if (lastId && chats.find(c => c.id === lastId)) {
     activeChatId = lastId;
     restoreChat(chats.find(c => c.id === lastId));
@@ -706,6 +722,7 @@ async function loadChatsFromSupabase() {
 
   return chats;
 }
+
 async function saveCurrentChat() {
   if (!activeChatId || !currentUser) return;
   showSync();
@@ -724,9 +741,9 @@ async function saveCurrentChat() {
   hideSync();
   if (error) console.error('Save chat error:', error);
 
+  // Refresh sidebar list
   const { data } = await supabase
-    .from('chats')
-    .select('*')
+    .from('chats').select('*')
     .eq('user_id', currentUser.id)
     .order('updated_at', { ascending: false });
   renderChatList(data || []);
@@ -735,15 +752,16 @@ async function saveCurrentChat() {
 async function deleteChatFromSupabase(chatId) {
   if (!currentUser) return;
   showSync();
-  const { error } = await supabase.from('chats').delete().eq('id', chatId).eq('user_id', currentUser.id);
+  const { error } = await supabase.from('chats').delete()
+    .eq('id', chatId).eq('user_id', currentUser.id);
   hideSync();
   if (error) console.error('Delete chat error:', error);
 }
 
 function restoreChat(chat) {
-  paperText   = chat.paper_text  || '';
-  paperName   = chat.paper_name  || '';
-  chatHistory = chat.history     || [];
+  paperText    = chat.paper_text  || '';
+  paperName    = chat.paper_name  || '';
+  chatHistory  = chat.history     || [];
   activeChatId = chat.id;
   localStorage.setItem('kalypto_active_chat', chat.id);
   clearMessagesUI();
@@ -786,17 +804,14 @@ async function switchToChat(chatId) {
   await saveCurrentChat();
 
   const { data } = await supabase
-    .from('chats')
-    .select('*')
-    .eq('id', chatId)
-    .eq('user_id', currentUser.id)
+    .from('chats').select('*')
+    .eq('id', chatId).eq('user_id', currentUser.id)
     .single();
 
   if (data) restoreChat(data);
 
   const { data: all } = await supabase
-    .from('chats')
-    .select('*')
+    .from('chats').select('*')
     .eq('user_id', currentUser.id)
     .order('updated_at', { ascending: false });
   renderChatList(all || []);
@@ -806,11 +821,10 @@ async function switchToChat(chatId) {
 async function deleteChat(chatId, e) {
   e.stopPropagation();
   await deleteChatFromSupabase(chatId);
-  if (chatId === activeChatId) { createNewChat(); }
+  if (chatId === activeChatId) createNewChat();
 
   const { data } = await supabase
-    .from('chats')
-    .select('*')
+    .from('chats').select('*')
     .eq('user_id', currentUser.id)
     .order('updated_at', { ascending: false });
   renderChatList(data || []);
@@ -823,7 +837,9 @@ function renderChatList(chats) {
   chats.forEach(chat => {
     const entry = document.createElement('div');
     entry.className = 'chat-entry' + (chat.id === activeChatId ? ' active' : '');
-    const date = chat.updated_at ? new Date(chat.updated_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) : '';
+    const date = chat.updated_at
+      ? new Date(chat.updated_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
+      : '';
     entry.innerHTML = `
       <div class="chat-entry-info">
         <div class="chat-entry-paper">${chat.paper_name || 'No paper'}</div>
@@ -844,6 +860,9 @@ function clearMessagesUI() {
   emptyState.style.display = '';
 }
 
+// ═══════════════════════════════════════════════════════════
+// MODE SWITCHER (Chat ↔ Compare)
+// ═══════════════════════════════════════════════════════════
 document.getElementById('modeChatBtn').addEventListener('click', () => setMode('chat'));
 document.getElementById('modeCompareBtn').addEventListener('click', () => setMode('compare'));
 
@@ -866,16 +885,18 @@ function setMode(mode) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// COMPARE MODE
+// ═══════════════════════════════════════════════════════════
 async function populatePickLists() {
   if (!currentUser) return;
   const { data: chats } = await supabase
-    .from('chats')
-    .select('*')
+    .from('chats').select('*')
     .eq('user_id', currentUser.id)
     .order('updated_at', { ascending: false });
 
   ['A', 'B'].forEach(slot => {
-    const list = document.getElementById(`slotPickList${slot}`);
+    const list  = document.getElementById(`slotPickList${slot}`);
     list.innerHTML = '';
     const valid = (chats || []).filter(c => c.paper_text);
     if (valid.length === 0) {
@@ -900,20 +921,23 @@ function showSlotCard(slot, name, meta) {
   document.getElementById(`slotCard${slot}`).classList.add('visible');
   document.getElementById(`slotUpload${slot}`).style.display = 'none';
   document.getElementById(`slotName${slot}`).textContent = name;
-  document.getElementById(`slotMeta${slot}`).textContent = meta;
+  document.getElementById(`slotMeta${slot}`).textContent  = meta;
   updateCompareButtons();
 }
+
 function clearSlot(slot) {
   compareSlots[slot] = { name: '', text: '' };
   document.getElementById(`slotCard${slot}`).classList.remove('visible');
   document.getElementById(`slotUpload${slot}`).style.display = '';
   updateCompareButtons();
 }
+
 function updateCompareButtons() {
   const both = compareSlots.A.text && compareSlots.B.text;
   Object.values(cmpBtns).forEach(btn => btn.disabled = !both);
   compareSendBtn.disabled = !both;
 }
+
 async function loadSlotPDF(slot, file) {
   const pEl = document.getElementById(`slotProgress${slot}`);
   const bEl = document.getElementById(`slotProgressBar${slot}`);
@@ -933,16 +957,22 @@ async function loadSlotPDF(slot, file) {
     bEl.style.width = '100%';
     setTimeout(() => { pEl.classList.remove('visible'); bEl.style.width = '0%'; }, 500);
     showSlotCard(slot, file.name, `${pdf.numPages} pages`);
-  } catch (err) { pEl.classList.remove('visible'); addCompareMessage(`⚠️ Error: ${err.message}`); }
+  } catch (err) {
+    pEl.classList.remove('visible');
+    addCompareMessage(`⚠️ Error reading PDF: ${err.message}`);
+  }
 }
+
 document.getElementById('slotFileA').addEventListener('change', e => { const f = e.target.files[0]; if (f) loadSlotPDF('A', f); });
 document.getElementById('slotFileB').addEventListener('change', e => { const f = e.target.files[0]; if (f) loadSlotPDF('B', f); });
-['A','B'].forEach(slot => {
+
+['A', 'B'].forEach(slot => {
   const drop = document.getElementById(`slotDrop${slot}`);
-  drop.addEventListener('dragover', e => { e.preventDefault(); drop.style.borderColor = 'var(--accent)'; });
+  drop.addEventListener('dragover',  e => { e.preventDefault(); drop.style.borderColor = 'var(--accent)'; });
   drop.addEventListener('dragleave', () => { drop.style.borderColor = ''; });
-  drop.addEventListener('drop', e => { e.preventDefault(); drop.style.borderColor = ''; const f = e.dataTransfer.files[0]; if (f) loadSlotPDF(slot, f); });
+  drop.addEventListener('drop',      e => { e.preventDefault(); drop.style.borderColor = ''; const f = e.dataTransfer.files[0]; if (f) loadSlotPDF(slot, f); });
 });
+
 document.getElementById('slotClearA').addEventListener('click', () => clearSlot('A'));
 document.getElementById('slotClearB').addEventListener('click', () => clearSlot('B'));
 document.getElementById('slotPickBtnA').addEventListener('click', () => { populatePickLists(); document.getElementById('slotPickListA').classList.toggle('open'); });
@@ -953,139 +983,282 @@ function buildCompareSystemPrompt() {
 Always refer to them as "Paper A" and "Paper B". Be clear, structured, and educational.
 When generating tables, use markdown table format with | separators.
 
-PAPER A — ${compareSlots.A.name}:\n${compareSlots.A.text}
-PAPER B — ${compareSlots.B.name}:\n${compareSlots.B.text}`;
+PAPER A — ${compareSlots.A.name}:
+${compareSlots.A.text}
+
+PAPER B — ${compareSlots.B.name}:
+${compareSlots.B.text}`;
 }
+
 async function sendCompareMessage(promptText, showAsUserMessage = true) {
   if (!compareSlots.A.text || !compareSlots.B.text) { addCompareMessage('⚠️ Please load both papers first.'); return; }
   if (compareLoading) return;
   if (showAsUserMessage) { addCompareUserMessage(promptText); compareInput.value = ''; compareInput.style.height = 'auto'; }
-  compareLoading = true; compareSendBtn.disabled = true; Object.values(cmpBtns).forEach(btn => btn.disabled = true);
+  compareLoading = true;
+  compareSendBtn.disabled = true;
+  Object.values(cmpBtns).forEach(btn => btn.disabled = true);
   const lm = addCompareLoading();
   try {
-    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 2048,
-        messages: [{ role: 'system', content: buildCompareSystemPrompt() }, { role: 'user', content: promptText }] }) });
-    const data = await res.json(); lm.remove();
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 2048,
+        messages: [
+          { role: 'system', content: buildCompareSystemPrompt() },
+          { role: 'user', content: promptText }
+        ]
+      })
+    });
+    const data = await res.json();
+    lm.remove();
     addCompareMessage(data.error ? `⚠️ ${data.error.message}` : (data.choices?.[0]?.message?.content || 'No response.'));
-  } catch (err) { lm.remove(); addCompareMessage(`⚠️ ${err.message}`); }
-  compareLoading = false; compareSendBtn.disabled = false; updateCompareButtons();
+  } catch (err) {
+    lm.remove();
+    addCompareMessage(`⚠️ ${err.message}`);
+  }
+  compareLoading = false;
+  compareSendBtn.disabled = false;
+  updateCompareButtons();
 }
-cmpBtns.summary.addEventListener('click', () => sendCompareMessage(`Give me a side-by-side summary of Paper A and Paper B. Cover: (1) problem addressed, (2) approach/methodology, (3) main findings.`, false));
-cmpBtns.agree.addEventListener('click', () => sendCompareMessage(`What do Paper A and Paper B agree on? List key points of agreement with explanations.`, false));
-cmpBtns.conflict.addEventListener('click', () => sendCompareMessage(`What are the contradictions or disagreements between Paper A and Paper B? List and explain.`, false));
-cmpBtns.table.addEventListener('click', () => sendCompareMessage(`Generate a markdown comparison table between Paper A and Paper B. Include: Research Question, Methodology, Sample/Data, Key Findings, Limitations, Conclusions.`, false));
+
+cmpBtns.summary.addEventListener('click',  () => sendCompareMessage('Give me a side-by-side summary of Paper A and Paper B. Cover: (1) problem addressed, (2) approach/methodology, (3) main findings.', false));
+cmpBtns.agree.addEventListener('click',    () => sendCompareMessage('What do Paper A and Paper B agree on? List key points of agreement with explanations.', false));
+cmpBtns.conflict.addEventListener('click', () => sendCompareMessage('What are the contradictions or disagreements between Paper A and Paper B? List and explain.', false));
+cmpBtns.table.addEventListener('click',    () => sendCompareMessage('Generate a markdown comparison table between Paper A and Paper B. Include: Research Question, Methodology, Sample/Data, Key Findings, Limitations, Conclusions.', false));
+
 compareSendBtn.addEventListener('click', () => { const t = compareInput.value.trim(); if (t) sendCompareMessage(t); });
 compareInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const t = compareInput.value.trim(); if (t) sendCompareMessage(t); } });
 compareInput.addEventListener('input', () => { compareInput.style.height = 'auto'; compareInput.style.height = Math.min(compareInput.scrollHeight, 160) + 'px'; });
-function addCompareMessage(text) { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message ai'; d.style.maxWidth = '100%'; d.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}`; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; }
-function addCompareUserMessage(text) { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message user'; d.style.maxWidth = '100%'; d.textContent = text; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; }
-function addCompareLoading() { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message ai loading'; d.style.maxWidth = '100%'; d.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; return d; }
 
-function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('visible'); document.body.style.overflow = 'hidden'; }
-function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow = ''; }
+function addCompareMessage(text)     { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message ai'; d.style.maxWidth = '100%'; d.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}`; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; }
+function addCompareUserMessage(text) { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message user'; d.style.maxWidth = '100%'; d.textContent = text; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; }
+function addCompareLoading()         { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message ai loading'; d.style.maxWidth = '100%'; d.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; return d; }
+
+// ═══════════════════════════════════════════════════════════
+// MOBILE SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function openSidebar()        { sidebar.classList.add('open'); overlay.classList.add('visible'); document.body.style.overflow = 'hidden'; }
+function closeSidebar()       { sidebar.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow = ''; }
 function closeSidebarOnMobile() { if (window.innerWidth <= 768) closeSidebar(); }
 menuBtn.addEventListener('click', openSidebar);
 overlay.addEventListener('click', closeSidebar);
 
-document.getElementById('tabUpload').addEventListener('click', () => { document.getElementById('tabUpload').classList.add('active'); document.getElementById('tabUrl').classList.remove('active'); document.getElementById('panelUpload').classList.add('active'); document.getElementById('panelUrl').classList.remove('active'); });
-document.getElementById('tabUrl').addEventListener('click', () => { document.getElementById('tabUrl').classList.add('active'); document.getElementById('tabUpload').classList.remove('active'); document.getElementById('panelUrl').classList.add('active'); document.getElementById('panelUpload').classList.remove('active'); });
+// ═══════════════════════════════════════════════════════════
+// UPLOAD TABS
+// ═══════════════════════════════════════════════════════════
+document.getElementById('tabUpload').addEventListener('click', () => {
+  document.getElementById('tabUpload').classList.add('active');
+  document.getElementById('tabUrl').classList.remove('active');
+  document.getElementById('panelUpload').classList.add('active');
+  document.getElementById('panelUrl').classList.remove('active');
+});
+document.getElementById('tabUrl').addEventListener('click', () => {
+  document.getElementById('tabUrl').classList.add('active');
+  document.getElementById('tabUpload').classList.remove('active');
+  document.getElementById('panelUrl').classList.add('active');
+  document.getElementById('panelUpload').classList.remove('active');
+});
 
-function normalizeArxivUrl(url) { const m = url.match(/arxiv\.org\/(?:abs|pdf)\/([^\s?#]+)/i); return m ? `https://arxiv.org/pdf/${m[1]}` : null; }
+// ═══════════════════════════════════════════════════════════
+// URL FETCH
+// ═══════════════════════════════════════════════════════════
+function normalizeArxivUrl(url) {
+  const m = url.match(/arxiv\.org\/(?:abs|pdf)\/([^\s?#]+)/i);
+  return m ? `https://arxiv.org/pdf/${m[1]}` : null;
+}
+
 async function loadFromUrl() {
-  const raw = urlInput.value.trim(); if (!raw) return;
-  urlFetchBtn.disabled = true; urlFetchBtn.textContent = '...';
+  const raw = urlInput.value.trim();
+  if (!raw) return;
+  urlFetchBtn.disabled = true;
+  urlFetchBtn.textContent = '…';
+
   let pdfUrl = normalizeArxivUrl(raw);
-  if (!pdfUrl && raw.toLowerCase().endsWith('.pdf')) pdfUrl = raw.startsWith('http') ? raw : 'https://' + raw;
-  if (!pdfUrl) { addMessage('ai', `⚠️ Unsupported link. Kalypto supports ArXiv links and direct .pdf URLs.`); urlFetchBtn.disabled = false; urlFetchBtn.textContent = 'Load'; return; }
+  if (!pdfUrl && raw.toLowerCase().endsWith('.pdf')) {
+    pdfUrl = raw.startsWith('http') ? raw : 'https://' + raw;
+  }
+  if (!pdfUrl) {
+    addMessage('ai', '⚠️ Unsupported link. Kalypto supports ArXiv links and direct .pdf URLs.');
+    urlFetchBtn.disabled = false;
+    urlFetchBtn.textContent = 'Load';
+    return;
+  }
+
   try {
     progressWrap.classList.add('visible'); progressBar.style.width = '20%';
-    const res = await fetch(pdfUrl); if (!res.ok) throw new Error(`Could not fetch PDF (${res.status}).`);
+    const res = await fetch(pdfUrl);
+    if (!res.ok) throw new Error(`Could not fetch PDF (${res.status}).`);
     progressBar.style.width = '50%';
     const buf = await res.arrayBuffer();
-    const parts = pdfUrl.split('/'); const fn = parts[parts.length-1] + (pdfUrl.endsWith('.pdf') ? '' : '.pdf');
+    const parts = pdfUrl.split('/');
+    const fn = parts[parts.length - 1] + (pdfUrl.endsWith('.pdf') ? '' : '.pdf');
     await parsePDFBuffer(buf, fn);
-  } catch (err) { progressWrap.classList.remove('visible'); progressBar.style.width = '0%'; addMessage('ai', `⚠️ Error: ${err.message}`); }
-  urlFetchBtn.disabled = false; urlFetchBtn.textContent = 'Load';
+  } catch (err) {
+    progressWrap.classList.remove('visible');
+    progressBar.style.width = '0%';
+    addMessage('ai', `⚠️ Error: ${err.message}`);
+  }
+  urlFetchBtn.disabled = false;
+  urlFetchBtn.textContent = 'Load';
 }
+
 urlFetchBtn.addEventListener('click', loadFromUrl);
 urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrl(); });
 
+// ═══════════════════════════════════════════════════════════
+// PDF PARSING
+// ═══════════════════════════════════════════════════════════
 async function parsePDFBuffer(arrayBuffer, displayName) {
   if (chatHistory.length > 0) {
     await saveCurrentChat();
     activeChatId = 'chat_' + Date.now();
     localStorage.setItem('kalypto_active_chat', activeChatId);
-    chatHistory = []; clearMessagesUI();
+    chatHistory = [];
+    clearMessagesUI();
   }
-  paperName = displayName; progressBar.style.width = '60%';
+  paperName = displayName;
+  progressBar.style.width = '60%';
   try {
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     let fullText = '';
     for (let i = 1; i <= pdf.numPages; i++) {
-      const pg = await pdf.getPage(i); const ct = await pg.getTextContent();
+      const pg = await pdf.getPage(i);
+      const ct = await pg.getTextContent();
       fullText += ct.items.map(x => x.str).join(' ') + '\n\n';
       progressBar.style.width = (60 + (i / pdf.numPages) * 35) + '%';
     }
     paperText = fullText.slice(0, 12000);
     progressBar.style.width = '100%';
     setTimeout(() => { progressWrap.classList.remove('visible'); progressBar.style.width = '0%'; }, 600);
-    paperTitle.textContent = paperName; paperMeta.textContent = `${pdf.numPages} pages · ${Math.round(fullText.length/1000)}k chars`;
-    paperCard.classList.add('visible'); statusPill.textContent = '● Paper loaded'; statusPill.classList.add('has-paper');
-    chatHeader.innerHTML = `Paper: <span>${paperName}</span>`; sendBtn.disabled = false;
+
+    paperTitle.textContent = paperName;
+    paperMeta.textContent  = `${pdf.numPages} pages · ${Math.round(fullText.length / 1000)}k chars`;
+    paperCard.classList.add('visible');
+    statusPill.textContent = '● Paper loaded';
+    statusPill.classList.add('has-paper');
+    chatHeader.innerHTML = `Paper: <span>${paperName}</span>`;
+    sendBtn.disabled = false;
     Object.values(quickBtns).forEach(btn => btn.disabled = false);
+
     addMessage('ai', `**Paper loaded:** ${paperName}\n\nI've read through the document. Ask me anything about it, or use the quick actions on the left.`);
-    await saveCurrentChat(); closeSidebarOnMobile();
-  } catch (err) { progressWrap.classList.remove('visible'); addMessage('ai', `⚠️ Error reading PDF: ${err.message}`); }
+    await saveCurrentChat();
+    closeSidebarOnMobile();
+  } catch (err) {
+    progressWrap.classList.remove('visible');
+    addMessage('ai', `⚠️ Error reading PDF: ${err.message}`);
+  }
 }
-async function loadPDF(file) { progressWrap.classList.add('visible'); progressBar.style.width = '10%'; const buf = await file.arrayBuffer(); progressBar.style.width = '30%'; await parsePDFBuffer(buf, file.name); }
+
+async function loadPDF(file) {
+  progressWrap.classList.add('visible');
+  progressBar.style.width = '10%';
+  const buf = await file.arrayBuffer();
+  progressBar.style.width = '30%';
+  await parsePDFBuffer(buf, file.name);
+}
+
 fileInput.addEventListener('change', e => { const f = e.target.files[0]; if (f && f.type === 'application/pdf') loadPDF(f); });
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f && f.type === 'application/pdf') loadPDF(f); });
+dropZone.addEventListener('drop',      e => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f && f.type === 'application/pdf') loadPDF(f); });
 
+// ═══════════════════════════════════════════════════════════
+// CHAT SEND
+// ═══════════════════════════════════════════════════════════
 async function sendMessage(overrideText) {
-  const text = (overrideText || userInput.value).trim(); if (!text || isLoading) return;
-  addMessage('user', text); userInput.value = ''; userInput.style.height = 'auto';
-  isLoading = true; sendBtn.disabled = true; const lm = addLoadingMessage();
+  const text = (overrideText || userInput.value).trim();
+  if (!text || isLoading) return;
+
+  addMessage('user', text);
+  userInput.value = '';
+  userInput.style.height = 'auto';
+  isLoading = true;
+  sendBtn.disabled = true;
+  const lm = addLoadingMessage();
   chatHistory.push({ role: 'user', content: text });
+
   try {
-    const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 1024,
-        messages: [{ role: 'system', content: `You are Kalypto, an AI research assistant. Help users understand academic papers. Be clear and educational. Use markdown formatting.\n\nPAPER CONTENT:\n${paperText}` },
-          ...chatHistory.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))] }) });
-    const data = await res.json(); lm.remove();
-    if (data.error) { addMessage('ai', `⚠️ API Error: ${data.error.message}`); chatHistory.pop(); }
-    else { const reply = data.choices?.[0]?.message?.content || 'No response.'; addMessage('ai', reply); chatHistory.push({ role: 'model', content: reply }); await saveCurrentChat(); }
-  } catch (err) { lm.remove(); addMessage('ai', `⚠️ Network error: ${err.message}`); chatHistory.pop(); }
-  isLoading = false; sendBtn.disabled = false;
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 1024,
+        messages: [
+          { role: 'system', content: `You are Kalypto, an AI research assistant. Help users understand academic papers. Be clear and educational. Use markdown formatting.\n\nPAPER CONTENT:\n${paperText}` },
+          ...chatHistory.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
+        ]
+      })
+    });
+    const data = await res.json();
+    lm.remove();
+    if (data.error) {
+      addMessage('ai', `⚠️ API Error: ${data.error.message}`);
+      chatHistory.pop();
+    } else {
+      const reply = data.choices?.[0]?.message?.content || 'No response.';
+      addMessage('ai', reply);
+      chatHistory.push({ role: 'model', content: reply });
+      await saveCurrentChat();
+    }
+  } catch (err) {
+    lm.remove();
+    addMessage('ai', `⚠️ Network error: ${err.message}`);
+    chatHistory.pop();
+  }
+  isLoading = false;
+  sendBtn.disabled = false;
 }
 
+// ═══════════════════════════════════════════════════════════
+// MESSAGE RENDERING
+// ═══════════════════════════════════════════════════════════
 function renderMessage(role, text, animate = true) {
   if (emptyState) emptyState.style.display = 'none';
   const div = document.createElement('div');
   div.className = `message ${role === 'user' ? 'user' : 'ai'}`;
   if (!animate) div.style.animation = 'none';
+
   if (role !== 'user') {
     div.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}<div class="message-actions"><button class="copy-btn" data-copy="plain">📋 Copy text</button><button class="copy-btn" data-copy="markdown">{ } Copy markdown</button></div>`;
     div.dataset.raw = text;
     div.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const raw = div.dataset.raw;
-        const content = btn.dataset.copy === 'plain' ? raw.replace(/\*\*(.*?)\*\*/g,'$1').replace(/`(.*?)`/g,'$1').replace(/^- /gm,'• ') : raw;
-        navigator.clipboard.writeText(content).then(() => { const o = btn.textContent; btn.textContent = '✓ Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 1500); });
+        const content = btn.dataset.copy === 'plain'
+          ? raw.replace(/\*\*(.*?)\*\*/g, '$1').replace(/`(.*?)`/g, '$1').replace(/^- /gm, '• ')
+          : raw;
+        navigator.clipboard.writeText(content).then(() => {
+          const o = btn.textContent;
+          btn.textContent = '✓ Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 1500);
+        });
       });
     });
-  } else { div.textContent = text; }
-  messagesDiv.appendChild(div); messagesDiv.scrollTop = messagesDiv.scrollHeight; return div;
+  } else {
+    div.textContent = text;
+  }
+
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  return div;
 }
+
 function addMessage(role, text) { return renderMessage(role, text, true); }
+
 function addLoadingMessage() {
   if (emptyState) emptyState.style.display = 'none';
-  const div = document.createElement('div'); div.className = 'message ai loading';
+  const div = document.createElement('div');
+  div.className = 'message ai loading';
   div.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`;
-  messagesDiv.appendChild(div); messagesDiv.scrollTop = messagesDiv.scrollHeight; return div;
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  return div;
 }
+
 function formatText(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1096,27 +1269,49 @@ function formatText(text) {
       const rows = m.trim().split('\n').filter(r => !/^[\s|:-]+$/.test(r));
       if (rows.length < 2) return m;
       return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:12px">${
-        rows.map((row,i) => `<tr>${row.split('|').filter((_,j,a)=>j>0&&j<a.length-1).map(cell =>
-          i===0 ? `<th style="border:1px solid var(--border);padding:6px 10px;background:var(--surface2);text-align:left">${cell.trim()}</th>`
-                : `<td style="border:1px solid var(--border);padding:6px 10px">${cell.trim()}</td>`
-        ).join('')}</tr>`).join('')}</table></div>`;
+        rows.map((row, i) => `<tr>${
+          row.split('|').filter((_, j, a) => j > 0 && j < a.length - 1).map(cell =>
+            i === 0
+              ? `<th style="border:1px solid var(--border);padding:6px 10px;background:var(--surface2);text-align:left">${cell.trim()}</th>`
+              : `<td style="border:1px solid var(--border);padding:6px 10px">${cell.trim()}</td>`
+          ).join('')
+        }</tr>`).join('')
+      }</table></div>`;
     })
-    .replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>').replace(/^(.+)$/, '<p>$1</p>');
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^(.+)$/, '<p>$1</p>');
 }
 
+// ═══════════════════════════════════════════════════════════
+// QUICK ACTIONS + CONTROLS
+// ═══════════════════════════════════════════════════════════
 newChatBtn.addEventListener('click', createNewChat);
+
 quickBtns.summarize.addEventListener('click', () => { sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.'); closeSidebarOnMobile(); });
-quickBtns.methods.addEventListener('click', () => { sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?'); closeSidebarOnMobile(); });
-quickBtns.findings.addEventListener('click', () => { sendMessage('What are the key findings and conclusions of this paper? What do the results mean?'); closeSidebarOnMobile(); });
-quickBtns.quiz.addEventListener('click', () => { sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.'); closeSidebarOnMobile(); });
-quickBtns.flash.addEventListener('click', () => { sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.'); closeSidebarOnMobile(); });
+quickBtns.methods.addEventListener('click',   () => { sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?'); closeSidebarOnMobile(); });
+quickBtns.findings.addEventListener('click',  () => { sendMessage('What are the key findings and conclusions of this paper? What do the results mean?'); closeSidebarOnMobile(); });
+quickBtns.quiz.addEventListener('click',      () => { sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.'); closeSidebarOnMobile(); });
+quickBtns.flash.addEventListener('click',     () => { sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.'); closeSidebarOnMobile(); });
+
 userInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 userInput.addEventListener('input', () => { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px'; });
 sendBtn.addEventListener('click', () => sendMessage());
+
+// ═══════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════════════════════════
 const themeToggle = document.getElementById('themeToggle');
-function applyTheme(t) { if (t==='light') { document.body.classList.add('light'); themeToggle.textContent = '🌙 Dark'; } else { document.body.classList.remove('light'); themeToggle.textContent = '☀ Light'; } }
+function applyTheme(t) {
+  if (t === 'light') { document.body.classList.add('light'); themeToggle.textContent = '🌙 Dark'; }
+  else { document.body.classList.remove('light'); themeToggle.textContent = '☀ Light'; }
+}
 applyTheme(localStorage.getItem('kalypto_theme') || 'dark');
-themeToggle.addEventListener('click', () => { const n = document.body.classList.contains('light') ? 'dark' : 'light'; localStorage.setItem('kalypto_theme', n); applyTheme(n); });
+themeToggle.addEventListener('click', () => {
+  const n = document.body.classList.contains('light') ? 'dark' : 'light';
+  localStorage.setItem('kalypto_theme', n);
+  applyTheme(n);
+});
 </script>
 </body>
 </html>
