@@ -631,8 +631,25 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
 // ═══════════════════════════════════════════════════════════
 // AUTH — SIGN OUT
 // ═══════════════════════════════════════════════════════════
+let signOutPending = false;
 userBtn.addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  if (!signOutPending) {
+    signOutPending = true;
+    userBtn.style.borderColor = 'var(--danger)';
+    userBtn.style.color = 'var(--danger)';
+    userEmailEl.textContent = 'Click again to sign out';
+    setTimeout(() => {
+      if (signOutPending) {
+        signOutPending = false;
+        const email = currentUser?.email || 'Logged in';
+        userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
+        userBtn.style.borderColor = '';
+        userBtn.style.color = '';
+      }
+    }, 3000);
+  } else {
+    await supabase.auth.signOut();
+  }
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -680,19 +697,6 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     loginBtn.textContent = 'Sign In';
   }
 });
-
-  (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user && !currentUser) {
-      currentUser = session.user;
-      authScreen.classList.add('hidden');
-      const email = session.user.email || 'Logged in';
-      userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
-      userBtn.style.display = 'flex';
-      try { await loadChatsFromSupabase(); }
-      catch (err) { activeChatId = 'chat_' + Date.now(); }
-    }
-  })();
 
 // ═══════════════════════════════════════════════════════════
 // SYNC INDICATOR
@@ -807,6 +811,7 @@ async function createNewChat() {
   sendBtn.disabled = true;
   Object.values(quickBtns).forEach(btn => btn.disabled = true);
   chatHeader.innerHTML = 'No paper loaded';
+  await saveCurrentChat();
   closeSidebarOnMobile();
 }
 
