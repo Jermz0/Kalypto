@@ -632,9 +632,7 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
 // AUTH — SIGN OUT
 // ═══════════════════════════════════════════════════════════
 userBtn.addEventListener('click', async () => {
-  if (confirm('Sign out of Kalypto?')) {
-    await supabase.auth.signOut();
-  }
+  await supabase.auth.signOut();
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -682,6 +680,19 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     loginBtn.textContent = 'Sign In';
   }
 });
+
+  (async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user && !currentUser) {
+      currentUser = session.user;
+      authScreen.classList.add('hidden');
+      const email = session.user.email || 'Logged in';
+      userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
+      userBtn.style.display = 'flex';
+      try { await loadChatsFromSupabase(); }
+      catch (err) { activeChatId = 'chat_' + Date.now(); }
+    }
+  })();
 
 // ═══════════════════════════════════════════════════════════
 // SYNC INDICATOR
@@ -784,8 +795,8 @@ function restoreChat(chat) {
   }
 }
 
-function createNewChat() {
-  saveCurrentChat();
+async function createNewChat() {
+  await saveCurrentChat();
   activeChatId = 'chat_' + Date.now();
   localStorage.setItem('kalypto_active_chat', activeChatId);
   paperText = ''; paperName = ''; chatHistory = [];
