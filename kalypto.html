@@ -6,7 +6,7 @@
   <title>Kalypto — AI Research Assistant</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
   <style>
     :root {
@@ -434,7 +434,7 @@
 // ═══════════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://ahlykwcpowwzpkbpcwrn.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobHlrd2Nwb3d3enBrYnBjd3JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MDY5NzcsImV4cCI6MjA5MDI4Mjk3N30.XRh-JWWAOClUozW6UWJlRPbfTAt2bGeuD__HTiyVs8A';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -632,9 +632,7 @@ document.getElementById('googleBtn').addEventListener('click', async () => {
 // AUTH — SIGN OUT
 // ═══════════════════════════════════════════════════════════
 userBtn.addEventListener('click', async () => {
-  if (confirm('Sign out of Kalypto?')) {
-    await supabase.auth.signOut();
-  }
+  await supabase.auth.signOut();
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -682,6 +680,19 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     loginBtn.textContent = 'Sign In';
   }
 });
+
+  (async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user && !currentUser) {
+      currentUser = session.user;
+      authScreen.classList.add('hidden');
+      const email = session.user.email || 'Logged in';
+      userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
+      userBtn.style.display = 'flex';
+      try { await loadChatsFromSupabase(); }
+      catch (err) { activeChatId = 'chat_' + Date.now(); }
+    }
+  })();
 
 // ═══════════════════════════════════════════════════════════
 // SYNC INDICATOR
@@ -784,8 +795,8 @@ function restoreChat(chat) {
   }
 }
 
-function createNewChat() {
-  saveCurrentChat();
+async function createNewChat() {
+  await saveCurrentChat();
   activeChatId = 'chat_' + Date.now();
   localStorage.setItem('kalypto_active_chat', activeChatId);
   paperText = ''; paperName = ''; chatHistory = [];
@@ -1315,4 +1326,3 @@ themeToggle.addEventListener('click', () => {
 </script>
 </body>
 </html>
- 
