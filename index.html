@@ -3,277 +3,525 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kalypto — AI Research Assistant</title>
-  <!-- FIX #2: Added Inter to the Google Fonts import -->
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <title>Kalypto — AI Research & Study Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
   <style>
+
     :root {
-      --bg:        #0a0a0f;
-      --surface:   #13131a;
-      --surface2:  #1a1a24;
-      --border:    #2a2a3a;
-      --accent:    #2340c4;
-      --accent2:   #10c287;
-      --danger:    #ff5f5f;
-      --text:      #e8e8f0;
-      --muted:     #6b6b88;
-      --user-bg:   #1a1a2e;
-      --ai-bg:     #111118;
+      --bg:        #0B1121;
+      --surface:   #151F38;
+      --surface2:  #131B2E;
+      --surface3:  #1A2545;
+      --border:    rgba(99,102,241,0.25);
+      --border-hi: rgba(99,102,241,0.5);
+      --accent:    #6366F1;
+      --accent-hi: #818CF8;
+      --accent2:   #10B981;
+      --accent2-hi:#34D399;
+      --purple:    #8B5CF6;
+      --cyan:      #06B6D4;
+      --danger:    #EF4444;
+      --text:      #FFFFFF;
+      --muted:     #A0AEC0;
+      --muted2:    #64748B;
+      --user-bg:   rgba(99,102,241,0.12);
+      --user-border:rgba(99,102,241,0.35);
+      --ai-bg:     rgba(21,31,56,0.7);
+      --grad-primary:   linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
+      --grad-secondary: linear-gradient(135deg,rgba(99,102,241,0.2) 0%,rgba(139,92,246,0.2) 100%);
+      --grad-logo:      linear-gradient(135deg,#8B5CF6 0%,#EC4899 100%);
+      --grad-text:      linear-gradient(135deg,#818CF8,#C084FC);
+      --glow-card: 0 8px 32px rgba(99,102,241,0.18);
+      --glow-btn:  0 4px 20px rgba(99,102,241,0.4);
       --font-head: 'Syne', sans-serif;
-      --font-body: 'Inter', monospace; /* FIX #2: Inter is now actually loaded */
+      --font-body: 'Inter', system-ui, sans-serif;
       --radius:    12px;
+      --radius-lg: 16px;
+      --radius-pill:999px;
     }
+
     body.light {
-      --bg:       #f0f0f0; --surface:  #e4e4e4; --surface2: #5c5b5b;
-      --border:   #c8c8c8; --text:     #000000; --muted:    #777777;
-      --user-bg:  #dce3f0; --ai-bg:    #e4e4e4; --accent:   #2340c4; --accent2:  #c21045;
+      --bg:        #F0F4FF;
+      --surface:   #FFFFFF;
+      --surface2:  #E8EEFF;
+      --surface3:  #DDE3FF;
+      --border:    rgba(99,102,241,0.18);
+      --border-hi: rgba(99,102,241,0.4);
+      --accent:    #4F46E5;
+      --accent-hi: #6366F1;
+      --accent2:   #059669;
+      --accent2-hi:#10B981;
+      --purple:    #7C3AED;
+      --danger:    #DC2626;
+      --text:      #0B1121;
+      --muted:     #4B5563;
+      --muted2:    #9CA3AF;
+      --user-bg:   #EEF0FF;
+      --user-border:rgba(99,102,241,0.3);
+      --ai-bg:     #FFFFFF;
+      --grad-primary:   linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);
+      --grad-secondary: linear-gradient(135deg,rgba(79,70,229,0.1) 0%,rgba(124,58,237,0.1) 100%);
+      --grad-text:      linear-gradient(135deg,#4F46E5,#7C3AED);
+      --glow-card: 0 4px 20px rgba(99,102,241,0.1);
+      --glow-btn:  0 4px 16px rgba(79,70,229,0.3);
     }
-    body.light .send-btn svg { fill: #ffffff; }
-    body.light .message.user { border-color: #c5d3f7; }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
-
-    .auth-screen {
-      position: fixed; inset: 0; background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 999; padding: 24px;
+    body.light header { background: rgba(240,244,255,0.88); }
+    body.light .sidebar { background: rgba(255,255,255,0.8); }
+    body.light .input-bar,
+    body.light .compare-input-bar,
+    body.light .chat-header,
+    body.light .compare-actions,
+    body.light .compare-top { background: rgba(240,244,255,0.7); }
+    body.light .message.ai { background: #FFFFFF; }
+    body.light .send-btn svg { fill: #FFFFFF; }
+    body.light .auth-google { background: #F8FAFF; }
+    body.light body::before {
+      background:
+        radial-gradient(ellipse 60% 50% at 10% 0%,rgba(99,102,241,0.07) 0%,transparent 60%),
+        radial-gradient(ellipse 40% 40% at 90% 100%,rgba(139,92,246,0.04) 0%,transparent 60%);
     }
-    .auth-screen.hidden { display: none; }
-    .auth-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 40px 36px; width: 100%; max-width: 400px;
-      display: flex; flex-direction: column; gap: 20px;
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      background:var(--bg); color:var(--text);
+      font-family:var(--font-body); font-size:14px; line-height:1.6;
+      min-height:100vh; display:flex; flex-direction:column;
     }
-    .auth-logo { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--accent); text-align: center; }
-    .auth-logo span { color: var(--text); }
-    .auth-tagline { font-size: 12px; color: var(--muted); text-align: center; margin-top: -12px; }
-    .auth-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; }
-    .auth-tab { flex: 1; background: transparent; border: none; border-radius: 6px; padding: 8px; color: var(--muted); font-family: var(--font-body); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s; }
-    .auth-tab.active { background: var(--surface2); color: var(--text); }
-    .auth-field { display: flex; flex-direction: column; gap: 6px; }
-    .auth-field label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-    .auth-input { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: var(--font-body); font-size: 13px; width: 100%; transition: border-color 0.2s; }
-    .auth-input:focus { outline: none; border-color: var(--accent2); }
-    .auth-input::placeholder { color: var(--muted); }
-    .auth-submit { background: var(--accent); border: none; border-radius: 8px; padding: 13px; color: #fff; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; width: 100%; transition: opacity 0.2s; }
-    .auth-submit:hover { opacity: 0.85; }
-    .auth-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-    .auth-divider { display: flex; align-items: center; gap: 12px; font-size: 10px; color: var(--muted); }
-    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .auth-google { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 11px; color: var(--text); font-family: var(--font-body); font-size: 12px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; transition: border-color 0.2s; }
-    .auth-google:hover { border-color: var(--accent2); }
-    .auth-error { font-size: 11px; color: var(--danger); text-align: center; min-height: 16px; }
-    .auth-success { font-size: 11px; color: var(--accent2); text-align: center; min-height: 16px; }
+    body::before{
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(ellipse 60% 50% at 10% 0%,rgba(99,102,241,0.12) 0%,transparent 60%),
+        radial-gradient(ellipse 40% 40% at 90% 100%,rgba(139,92,246,0.08) 0%,transparent 60%);
+    }
 
-    header { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; position: relative; z-index: 100; gap: 12px; }
-    .header-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-    .logo { font-family: var(--font-head); font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--accent); }
-    .logo span { color: var(--text); }
-    .mode-switcher { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; flex-shrink: 0; }
-    .mode-btn { background: transparent; border: none; border-radius: 6px; padding: 6px 14px; color: var(--muted); font-family: var(--font-body); font-size: 11px; cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap; }
-    .mode-btn.active { background: var(--surface2); color: var(--text); }
-    .header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-    .menu-btn { display: none; background: none; border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; cursor: pointer; align-items: center; justify-content: center; flex-direction: column; gap: 4px; }
-    .menu-btn span { display: block; width: 16px; height: 2px; background: var(--text); border-radius: 2px; }
-    .status-pill { font-size: 11px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.5px; white-space: nowrap; }
-    .status-pill.has-paper { border-color: var(--accent); color: var(--accent); }
-    .user-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; color: var(--text); font-family: var(--font-body); font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color 0.2s; white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
-    .user-btn:hover { border-color: var(--danger); color: var(--danger); }
+    .auth-screen{
+      position:fixed; inset:0; background:var(--bg);
+      display:flex; align-items:center; justify-content:center;
+      z-index:999; padding:24px;
+    }
+    .auth-screen.hidden{display:none;}
+    .auth-box{
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:40px 36px;
+      width:100%; max-width:400px;
+      display:flex; flex-direction:column; gap:20px;
+      box-shadow:var(--glow-card);
+      position:relative; overflow:hidden;
+    }
+    .auth-box::before{
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:var(--grad-primary);
+    }
+    .auth-logo{
+      font-family:var(--font-head); font-size:28px; font-weight:800; text-align:center;
+      background:var(--grad-text); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .auth-logo span{background:none; -webkit-text-fill-color:var(--text);}
+    .auth-tagline{font-size:12px; color:var(--muted); text-align:center; margin-top:-12px;}
+    .auth-tabs{
+      display:flex; gap:4px; background:var(--bg);
+      border:1px solid var(--border); border-radius:8px; padding:3px;
+    }
+    .auth-tab{
+      flex:1; background:transparent; border:none; border-radius:6px; padding:8px;
+      color:var(--muted); font-family:var(--font-body); font-size:12px;
+      cursor:pointer; transition:background 0.15s,color 0.15s; font-weight:500;
+    }
+    .auth-tab.active{background:var(--grad-primary); color:#fff;}
+    .auth-field{display:flex; flex-direction:column; gap:6px;}
+    .auth-field label{font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:500;}
+    .auth-input{
+      background:var(--bg); border:1px solid var(--border); border-radius:8px;
+      padding:11px 14px; color:var(--text); font-family:var(--font-body); font-size:13px;
+      width:100%; transition:border-color 0.2s,box-shadow 0.2s;
+    }
+    .auth-input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+    .auth-input::placeholder{color:var(--muted2);}
+    .auth-submit{
+      background:var(--grad-primary); border:none; border-radius:8px; padding:13px;
+      color:#fff; font-family:var(--font-body); font-size:13px; font-weight:600;
+      cursor:pointer; width:100%; transition:opacity 0.2s,transform 0.15s;
+      box-shadow:var(--glow-btn);
+    }
+    .auth-submit:hover{opacity:0.9; transform:translateY(-1px);}
+    .auth-submit:disabled{opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none;}
+    .auth-divider{
+      display:flex; align-items:center; gap:12px;
+      font-size:10px; color:var(--muted);
+    }
+    .auth-divider::before,.auth-divider::after{content:''; flex:1; height:1px; background:var(--border);}
+    .auth-google{
+      background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px;
+      color:var(--text); font-family:var(--font-body); font-size:12px; cursor:pointer; width:100%;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      transition:border-color 0.2s,background 0.2s;
+    }
+    .auth-google:hover{border-color:var(--accent); background:var(--surface3);}
+    .auth-error{font-size:11px; color:var(--danger); text-align:center; min-height:16px;}
+    .auth-success{font-size:11px; color:var(--accent2); text-align:center; min-height:16px;}
 
-    .app { display: flex; flex: 1; height: calc(100vh - 57px); overflow: hidden; }
-    .sidebar { width: 280px; min-width: 240px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--surface); overflow: hidden; transition: transform 0.3s ease; }
-    .sidebar-top { padding: 20px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex-shrink: 0; }
-    .new-chat-btn { width: 100%; background: transparent; border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px; color: var(--accent); font-family: var(--font-body); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; font-weight: 500; }
-    .new-chat-btn:hover { background: rgba(124,255,178,0.08); }
-    .chat-list-section { flex: 1; overflow-y: auto; padding: 12px 8px; display: flex; flex-direction: column; gap: 4px; }
-    .chat-list-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 4px 8px 8px; }
-    .chat-entry { border-radius: 8px; padding: 10px; cursor: pointer; transition: background 0.15s; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; border: 1px solid transparent; }
-    .chat-entry:hover { background: var(--surface2); }
-    .chat-entry.active { background: var(--surface2); border-color: var(--border); }
-    .chat-entry-info { flex: 1; min-width: 0; }
-    .chat-entry-paper { font-size: 11px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-    .chat-entry-preview { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-    .chat-entry-date { font-size: 9px; color: var(--muted); flex-shrink: 0; margin-top: 2px; }
-    .chat-delete-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 2px 4px; border-radius: 4px; opacity: 0; transition: opacity 0.15s, color 0.15s; flex-shrink: 0; }
-    .chat-entry:hover .chat-delete-btn { opacity: 1; }
-    .chat-delete-btn:hover { color: var(--danger); }
-    .no-chats { font-size: 11px; color: var(--muted); text-align: center; padding: 20px 8px; line-height: 1.6; }
-    .section-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-    .tab-bar { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 3px; margin-bottom: 10px; }
-    .tab-btn { flex: 1; background: transparent; border: none; border-radius: 6px; padding: 6px 8px; color: var(--muted); font-family: var(--font-body); font-size: 10px; cursor: pointer; transition: background 0.15s, color 0.15s; }
-    .tab-btn.active { background: var(--surface2); color: var(--text); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .url-row { display: flex; gap: 6px; align-items: stretch; }
-    .url-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: var(--text); font-family: var(--font-body); font-size: 11px; transition: border-color 0.2s; min-width: 0; }
-    .url-input:focus { outline: none; border-color: var(--accent2); }
-    .url-input::placeholder { color: var(--muted); }
-    .url-fetch-btn { background: var(--accent2); border: none; border-radius: 8px; padding: 0 12px; color: #fff; font-family: var(--font-body); font-size: 11px; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; flex-shrink: 0; }
-    .url-fetch-btn:hover { opacity: 0.85; }
-    .url-fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .url-hint { font-size: 10px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
-    .url-hint a { color: var(--accent2); text-decoration: none; }
-    .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 20px 12px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative; }
-    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(124,255,178,0.04); }
-    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .drop-icon { font-size: 22px; margin-bottom: 6px; display: block; }
-    .drop-text { font-size: 11px; color: var(--muted); }
-    .drop-text strong { color: var(--text); display: block; margin-bottom: 2px; }
-    .paper-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: none; margin-top: 8px; }
-    .paper-card.visible { display: block; }
-    .paper-title { font-size: 11px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
-    .paper-meta { font-size: 10px; color: var(--muted); }
-    .quick-actions { display: flex; flex-direction: column; gap: 6px; }
-    .quick-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-family: var(--font-body); font-size: 11px; cursor: pointer; text-align: left; transition: border-color 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px; }
-    .quick-btn:hover { border-color: var(--accent2); background: rgba(79,140,255,0.06); color: var(--accent2); }
-    .quick-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .chat-header { padding: 12px 24px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--muted); background: var(--surface); flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chat-header span { color: var(--text); }
-    .messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
-    .message { max-width: 760px; width: 100%; padding: 16px 18px; border-radius: var(--radius); line-height: 1.7; font-size: 13.5px; animation: fadeUp 0.25s ease; }
-    .message.user { background: var(--user-bg); border: 1px solid #2a2a4a; align-self: flex-end; color: var(--text); }
-    .message.ai { background: var(--ai-bg); border: 1px solid var(--border); align-self: flex-start; }
-    .message.ai .sender { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; display: block; }
-    .message.loading .dots span { display: inline-block; animation: blink 1.2s infinite; opacity: 0; }
-    .message.loading .dots span:nth-child(2) { animation-delay: 0.2s; }
-    .message.loading .dots span:nth-child(3) { animation-delay: 0.4s; }
-    .message-actions { display: flex; gap: 6px; margin-top: 12px; opacity: 0; transition: opacity 0.2s; }
-    .message.ai:hover .message-actions { opacity: 1; }
-    .copy-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--muted); font-family: var(--font-body); font-size: 10px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
-    .copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-    .copy-btn.copied { border-color: var(--accent); color: var(--accent); }
-    @keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); text-align: center; padding: 40px; }
-    .empty-icon { font-size: 48px; opacity: 0.3; }
-    .empty-title { font-family: var(--font-head); font-size: 18px; color: var(--text); opacity: 0.5; }
-    .empty-sub { font-size: 12px; max-width: 320px; }
-    .input-bar { border-top: 1px solid var(--border); padding: 16px 24px; display: flex; gap: 12px; align-items: flex-end; background: var(--surface); }
-    .input-bar textarea { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: var(--font-body); font-size: 13px; resize: none; min-height: 46px; max-height: 160px; transition: border-color 0.2s; line-height: 1.5; }
-    .input-bar textarea:focus { outline: none; border-color: var(--accent2); }
-    .input-bar textarea::placeholder { color: var(--muted); }
-    .send-btn { background: var(--accent); border: none; border-radius: 10px; width: 46px; height: 46px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s, transform 0.1s; flex-shrink: 0; }
-    .send-btn:hover { opacity: 0.85; }
-    .send-btn:active { transform: scale(0.95); }
-    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .send-btn svg { width: 18px; height: 18px; fill: #0a0a0f; }
-    .compare-view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
-    .compare-view.active { display: flex; }
-    .compare-top { display: flex; gap: 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .paper-slot { flex: 1; padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
-    .paper-slot:last-child { border-right: none; }
-    .slot-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-    .slot-label span { background: var(--accent2); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 9px; }
-    .slot-paper-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: none; }
-    .slot-paper-card.visible { display: block; }
-    .slot-paper-name { font-size: 11px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-    .slot-paper-meta { font-size: 10px; color: var(--muted); }
-    .slot-clear-btn { font-size: 10px; color: var(--danger); background: none; border: none; cursor: pointer; margin-top: 4px; font-family: var(--font-body); padding: 0; }
-    .slot-upload { display: flex; flex-direction: column; gap: 8px; }
-    .slot-drop { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative; font-size: 11px; color: var(--muted); }
-    .slot-drop:hover { border-color: var(--accent); background: rgba(124,255,178,0.04); }
-    .slot-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .slot-or { font-size: 10px; color: var(--muted); text-align: center; }
-    .slot-pick-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: var(--font-body); font-size: 11px; cursor: pointer; width: 100%; text-align: left; transition: border-color 0.2s; }
-    .slot-pick-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-    .slot-pick-list { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; max-height: 160px; overflow-y: auto; display: none; }
-    .slot-pick-list.open { display: block; }
-    .slot-pick-item { padding: 8px 12px; cursor: pointer; font-size: 11px; color: var(--text); border-bottom: 1px solid var(--border); transition: background 0.1s; }
-    .slot-pick-item:last-child { border-bottom: none; }
-    .slot-pick-item:hover { background: var(--surface2); }
-    .slot-pick-item-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
-    .slot-progress { height: 2px; background: var(--border); border-radius: 99px; overflow: hidden; display: none; }
-    .slot-progress.visible { display: block; }
-    .slot-progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
-    .compare-actions { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; background: var(--surface); flex-shrink: 0; }
-    .compare-action-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--text); font-family: var(--font-body); font-size: 11px; cursor: pointer; transition: border-color 0.2s, background 0.2s; white-space: nowrap; }
-    .compare-action-btn:hover { border-color: var(--accent2); background: rgba(79,140,255,0.06); color: var(--accent2); }
-    .compare-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .compare-results { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-    .compare-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); text-align: center; padding: 40px; }
-    .compare-input-bar { border-top: 1px solid var(--border); padding: 16px 24px; display: flex; gap: 12px; align-items: flex-end; background: var(--surface); flex-shrink: 0; }
-    .compare-input-bar textarea { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: var(--font-body); font-size: 13px; resize: none; min-height: 46px; max-height: 160px; transition: border-color 0.2s; line-height: 1.5; }
-    .compare-input-bar textarea:focus { outline: none; border-color: var(--accent2); }
-    .compare-input-bar textarea::placeholder { color: var(--muted); }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-    .progress-wrap { height: 2px; background: var(--border); border-radius: 99px; overflow: hidden; display: none; margin-top: 8px; }
-    .progress-wrap.visible { display: block; }
-    .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
-    .message.ai p { margin-bottom: 10px; }
-    .message.ai strong { color: var(--accent); font-weight: 500; }
-    .message.ai ul, .message.ai ol { padding-left: 20px; margin-bottom: 10px; }
-    .message.ai li { margin-bottom: 4px; }
-    .message.ai code { background: rgba(124,255,178,0.08); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; opacity: 0; transition: opacity 0.3s ease; }
-    .overlay.visible { display: block; opacity: 1; }
-    .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); display: inline-block; margin-left: 4px; opacity: 0; transition: opacity 0.3s; }
-    .sync-dot.syncing { opacity: 1; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    header{
+      padding:10px 24px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      background:rgba(11,17,33,0.85);
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      flex-shrink:0; position:relative; z-index:100; gap:12px;
+    }
+    .header-left{display:flex; align-items:center; gap:12px; flex-shrink:0;}
+    .logo-icon{
+      width:32px; height:32px; background:var(--grad-logo); border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-head); font-weight:800; font-size:15px; color:#fff;
+      flex-shrink:0; box-shadow:0 2px 8px rgba(139,92,246,0.4);
+    }
+    .logo{
+      font-family:var(--font-head); font-size:20px; font-weight:800; letter-spacing:-0.5px;
+      background:var(--grad-text); -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .logo span{background:none; -webkit-text-fill-color:var(--text);}
+    .mode-switcher{
+      display:flex; gap:2px;
+      background:rgba(99,102,241,0.08); border:1px solid var(--border);
+      border-radius:var(--radius-pill); padding:4px; flex-shrink:0;
+    }
+    .mode-btn{
+      background:transparent; border:none; border-radius:var(--radius-pill);
+      padding:5px 16px; color:var(--muted); font-family:var(--font-body);
+      font-size:11px; font-weight:500; cursor:pointer;
+      transition:background 0.2s,color 0.2s; white-space:nowrap;
+    }
+    .mode-btn.active{background:var(--grad-primary); color:#fff; box-shadow:0 2px 8px rgba(99,102,241,0.3);}
+    .header-right{display:flex; align-items:center; gap:10px; flex-shrink:0;}
+    .menu-btn{
+      display:none; background:none; border:1px solid var(--border); border-radius:8px;
+      width:36px; height:36px; cursor:pointer; align-items:center;
+      justify-content:center; flex-direction:column; gap:4px; transition:border-color 0.2s;
+    }
+    .menu-btn:hover{border-color:var(--accent);}
+    .menu-btn span{display:block; width:16px; height:2px; background:var(--text); border-radius:2px;}
+    #themeToggle{
+      background:rgba(99,102,241,0.08); border:1px solid var(--border);
+      border-radius:var(--radius-pill); padding:5px 14px;
+      color:var(--muted); font-family:var(--font-body); font-size:11px;
+      cursor:pointer; transition:border-color 0.2s,color 0.2s; white-space:nowrap;
+    }
+    #themeToggle:hover{border-color:var(--accent); color:var(--text);}
+    .status-pill{
+      font-size:11px; padding:5px 14px; border-radius:var(--radius-pill);
+      border:1px solid var(--border); color:var(--muted);
+      letter-spacing:0.3px; white-space:nowrap; font-weight:500; transition:all 0.2s;
+    }
+    .status-pill.has-paper{
+      border-color:var(--accent); color:var(--accent-hi);
+      background:rgba(99,102,241,0.1); box-shadow:0 0 12px rgba(99,102,241,0.15);
+    }
+    .user-btn{
+      background:var(--grad-secondary); border:1px solid var(--border);
+      border-radius:var(--radius-pill); padding:5px 14px;
+      color:var(--text); font-family:var(--font-body); font-size:11px;
+      cursor:pointer; display:flex; align-items:center; gap:6px;
+      transition:border-color 0.2s; white-space:nowrap;
+      max-width:180px; overflow:hidden; text-overflow:ellipsis; font-weight:500;
+    }
+    .user-btn:hover{border-color:var(--danger); color:var(--danger);}
 
-    @media (max-width: 768px) {
-      .menu-btn { display: flex; }
-      .mode-switcher { display: none; }
-      .sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 95; transform: translateX(-100%); width: 280px; }
-      .sidebar.open { transform: translateX(0); }
-      .compare-top { flex-direction: column; }
-      .paper-slot { border-right: none; border-bottom: 1px solid var(--border); min-height: unset; }
-      .auth-box { padding: 28px 20px; }
+    .app{display:flex; flex:1; height:calc(100vh - 53px); overflow:hidden; position:relative; z-index:1;}
+
+    .sidebar{
+      width:280px; min-width:240px; border-right:1px solid var(--border);
+      display:flex; flex-direction:column;
+      background:rgba(21,31,56,0.65); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      overflow:hidden; transition:transform 0.3s ease;
+    }
+    .sidebar-top{
+      padding:18px 16px; border-bottom:1px solid var(--border);
+      display:flex; flex-direction:column; gap:14px; overflow-y:auto; flex-shrink:0;
+    }
+    .new-chat-btn{
+      width:100%; background:var(--grad-secondary); border:1px solid var(--border-hi);
+      border-radius:8px; padding:10px 14px; color:var(--accent-hi);
+      font-family:var(--font-body); font-size:12px; cursor:pointer;
+      display:flex; align-items:center; gap:8px; font-weight:600;
+      transition:background 0.2s,border-color 0.2s,box-shadow 0.2s,color 0.2s;
+    }
+    .new-chat-btn:hover{background:var(--grad-primary); color:#fff; border-color:transparent; box-shadow:var(--glow-btn);}
+    .chat-list-section{flex:1; overflow-y:auto; padding:10px 8px; display:flex; flex-direction:column; gap:2px;}
+    .chat-list-label{font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); padding:4px 8px 8px; font-weight:600;}
+    .chat-entry{
+      border-radius:8px; padding:10px; cursor:pointer;
+      transition:background 0.15s; display:flex; align-items:flex-start;
+      justify-content:space-between; gap:8px; border:1px solid transparent; position:relative;
+    }
+    .chat-entry:hover{background:rgba(99,102,241,0.08);}
+    .chat-entry.active{background:rgba(99,102,241,0.1); border-color:var(--border);}
+    .chat-entry.active::before{
+      content:''; position:absolute; left:0; top:25%; bottom:25%;
+      width:2px; border-radius:2px; background:var(--grad-primary);
+    }
+    .chat-entry-info{flex:1; min-width:0;}
+    .chat-entry-paper{font-size:11px; color:var(--text); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+    .chat-entry-preview{font-size:10px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
+    .chat-entry-date{font-size:9px; color:var(--muted2); flex-shrink:0; margin-top:2px;}
+    .chat-delete-btn{
+      background:none; border:none; color:var(--muted2); cursor:pointer;
+      font-size:12px; padding:2px 4px; border-radius:4px;
+      opacity:0; transition:opacity 0.15s,color 0.15s;
+    }
+    .chat-entry:hover .chat-delete-btn{opacity:1;}
+    .chat-delete-btn:hover{color:var(--danger);}
+    .no-chats{font-size:11px; color:var(--muted2); text-align:center; padding:24px 8px; line-height:1.7;}
+    .section-label{font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); margin-bottom:8px; font-weight:600;}
+    .tab-bar{
+      display:flex; gap:2px; background:var(--bg); border:1px solid var(--border);
+      border-radius:var(--radius-pill); padding:3px; margin-bottom:10px;
+    }
+    .tab-btn{
+      flex:1; background:transparent; border:none; border-radius:var(--radius-pill);
+      padding:6px 8px; color:var(--muted); font-family:var(--font-body);
+      font-size:10px; cursor:pointer; transition:background 0.15s,color 0.15s; font-weight:500;
+    }
+    .tab-btn.active{background:var(--grad-primary); color:#fff;}
+    .tab-panel{display:none;} .tab-panel.active{display:block;}
+    .url-row{display:flex; gap:6px; align-items:stretch;}
+    .url-input{
+      flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px;
+      padding:9px 10px; color:var(--text); font-family:var(--font-body); font-size:11px;
+      transition:border-color 0.2s,box-shadow 0.2s; min-width:0;
+    }
+    .url-input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
+    .url-input::placeholder{color:var(--muted2);}
+    .url-fetch-btn{
+      background:var(--grad-primary); border:none; border-radius:8px;
+      padding:0 12px; color:#fff; font-family:var(--font-body); font-size:11px;
+      cursor:pointer; white-space:nowrap; font-weight:600;
+      transition:opacity 0.2s,box-shadow 0.2s; flex-shrink:0;
+    }
+    .url-fetch-btn:hover{opacity:0.9; box-shadow:var(--glow-btn);}
+    .url-fetch-btn:disabled{opacity:0.4; cursor:not-allowed; box-shadow:none;}
+    .url-hint{font-size:10px; color:var(--muted2); margin-top:6px; line-height:1.5;}
+    .url-hint a{color:var(--accent-hi); text-decoration:none;}
+    .drop-zone{
+      border:1px dashed var(--border-hi); border-radius:var(--radius);
+      padding:20px 12px; text-align:center; cursor:pointer;
+      transition:border-color 0.2s,background 0.2s; position:relative;
+      background:rgba(99,102,241,0.03);
+    }
+    .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent-hi); background:rgba(99,102,241,0.08);}
+    .drop-zone input[type="file"]{position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;}
+    .drop-icon{font-size:22px; margin-bottom:6px; display:block;}
+    .drop-text{font-size:11px; color:var(--muted);}
+    .drop-text strong{color:var(--text); display:block; margin-bottom:2px; font-weight:600;}
+    .paper-card{
+      background:rgba(99,102,241,0.08); border:1px solid var(--border-hi);
+      border-radius:var(--radius); padding:12px; display:none; margin-top:8px;
+      box-shadow:var(--glow-card);
+    }
+    .paper-card.visible{display:block;}
+    .paper-title{font-size:11px; font-weight:600; color:var(--text); margin-bottom:4px; line-height:1.4;}
+    .paper-meta{font-size:10px; color:var(--muted);}
+    .quick-actions{display:flex; flex-direction:column; gap:5px;}
+    .quick-btn{
+      background:transparent; border:1px solid var(--border); border-radius:8px;
+      padding:9px 12px; color:var(--muted); font-family:var(--font-body); font-size:11px;
+      cursor:pointer; text-align:left; transition:border-color 0.2s,background 0.2s,color 0.2s;
+      display:flex; align-items:center; gap:8px; font-weight:400;
+    }
+    .quick-btn:hover{border-color:var(--accent); background:rgba(99,102,241,0.1); color:var(--accent-hi);}
+    .quick-btn:disabled{opacity:0.3; cursor:not-allowed;}
+    .progress-wrap{height:2px; background:var(--surface3); border-radius:99px; overflow:hidden; display:none; margin-top:8px;}
+    .progress-wrap.visible{display:block;}
+    .progress-bar{height:100%; background:var(--grad-primary); width:0%; transition:width 0.3s ease;}
+
+    .chat-area{flex:1; display:flex; flex-direction:column; overflow:hidden;}
+    .chat-header{
+      padding:11px 24px; border-bottom:1px solid var(--border);
+      font-size:11px; color:var(--muted); background:rgba(11,17,33,0.6);
+      backdrop-filter:blur(8px); flex-shrink:0; white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis; font-weight:500; letter-spacing:0.3px;
+    }
+    .chat-header span{color:var(--text); font-weight:600;}
+    .messages{
+      flex:1; overflow-y:auto; padding:28px 24px;
+      display:flex; flex-direction:column; gap:16px; scroll-behavior:smooth;
+    }
+    .message{
+      max-width:780px; width:100%; padding:16px 20px;
+      border-radius:var(--radius-lg); line-height:1.75; font-size:13.5px;
+      animation:fadeUp 0.25s ease;
+    }
+    .message.user{background:var(--user-bg); border:1px solid var(--user-border); align-self:flex-end; color:var(--text);}
+    .message.ai{background:var(--ai-bg); border:1px solid var(--border); align-self:flex-start; box-shadow:var(--glow-card);}
+    .message.ai .sender{
+      font-size:9px; letter-spacing:1.5px; text-transform:uppercase;
+      color:var(--accent-hi); margin-bottom:10px; display:block; font-weight:600;
+    }
+    .message.loading .dots span{display:inline-block; animation:blink 1.2s infinite; opacity:0;}
+    .message.loading .dots span:nth-child(2){animation-delay:0.2s;}
+    .message.loading .dots span:nth-child(3){animation-delay:0.4s;}
+    .message-actions{display:flex; gap:6px; margin-top:14px; opacity:0; transition:opacity 0.2s;}
+    .message.ai:hover .message-actions{opacity:1;}
+    .copy-btn{
+      background:rgba(99,102,241,0.08); border:1px solid var(--border); border-radius:6px;
+      padding:4px 10px; color:var(--muted); font-family:var(--font-body); font-size:10px;
+      cursor:pointer; transition:border-color 0.2s,color 0.2s,background 0.2s; font-weight:500;
+    }
+    .copy-btn:hover{border-color:var(--accent); color:var(--accent-hi); background:rgba(99,102,241,0.12);}
+    .copy-btn.copied{border-color:var(--accent2); color:var(--accent2); background:rgba(16,185,129,0.08);}
+    .empty-state{
+      flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:14px; color:var(--muted); text-align:center; padding:40px;
+    }
+    .empty-icon{font-size:52px; opacity:0.2;}
+    .empty-title{font-family:var(--font-head); font-size:20px; color:var(--text); opacity:0.4; font-weight:700;}
+    .empty-sub{font-size:13px; max-width:340px; color:var(--muted); line-height:1.6;}
+    .input-bar{
+      border-top:1px solid var(--border); padding:14px 24px;
+      display:flex; gap:10px; align-items:flex-end;
+      background:rgba(11,17,33,0.7); backdrop-filter:blur(8px);
+    }
+    .input-bar textarea{
+      flex:1; background:var(--surface3); border:1px solid var(--border); border-radius:10px;
+      padding:12px 16px; color:var(--text); font-family:var(--font-body); font-size:13px;
+      resize:none; min-height:46px; max-height:160px;
+      transition:border-color 0.2s,box-shadow 0.2s; line-height:1.5;
+    }
+    .input-bar textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
+    .input-bar textarea::placeholder{color:var(--muted2);}
+    .send-btn{
+      background:var(--grad-primary); border:none; border-radius:10px;
+      width:46px; height:46px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:opacity 0.2s,transform 0.1s,box-shadow 0.2s; flex-shrink:0;
+      box-shadow:var(--glow-btn);
+    }
+    .send-btn:hover{opacity:0.9; transform:translateY(-1px);}
+    .send-btn:active{transform:scale(0.95);}
+    .send-btn:disabled{opacity:0.3; cursor:not-allowed; transform:none; box-shadow:none;}
+    .send-btn svg{width:18px; height:18px; fill:#fff;}
+
+    .compare-view{flex:1; display:none; flex-direction:column; overflow:hidden;}
+    .compare-view.active{display:flex;}
+    .compare-top{display:flex; border-bottom:1px solid var(--border); flex-shrink:0; background:rgba(11,17,33,0.4);}
+    .paper-slot{flex:1; padding:20px; border-right:1px solid var(--border); display:flex; flex-direction:column; gap:10px; min-height:200px;}
+    .paper-slot:last-child{border-right:none;}
+    .slot-label{font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); display:flex; align-items:center; gap:6px; font-weight:600;}
+    .slot-label span{background:var(--grad-primary); color:#fff; border-radius:4px; padding:2px 7px; font-size:9px; font-weight:700;}
+    .slot-paper-card{background:rgba(99,102,241,0.08); border:1px solid var(--border-hi); border-radius:10px; padding:12px; display:none; box-shadow:var(--glow-card);}
+    .slot-paper-card.visible{display:block;}
+    .slot-paper-name{font-size:11px; font-weight:600; color:var(--text); margin-bottom:4px;}
+    .slot-paper-meta{font-size:10px; color:var(--muted);}
+    .slot-clear-btn{font-size:10px; color:var(--danger); background:none; border:none; cursor:pointer; margin-top:6px; font-family:var(--font-body); padding:0;}
+    .slot-upload{display:flex; flex-direction:column; gap:8px;}
+    .slot-drop{
+      border:1px dashed var(--border-hi); border-radius:10px; padding:16px;
+      text-align:center; cursor:pointer; transition:border-color 0.2s,background 0.2s;
+      position:relative; font-size:11px; color:var(--muted); background:rgba(99,102,241,0.03);
+    }
+    .slot-drop:hover{border-color:var(--accent-hi); background:rgba(99,102,241,0.08);}
+    .slot-drop input[type="file"]{position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;}
+    .slot-or{font-size:10px; color:var(--muted2); text-align:center;}
+    .slot-pick-btn{
+      background:rgba(99,102,241,0.08); border:1px solid var(--border); border-radius:8px;
+      padding:8px 12px; color:var(--text); font-family:var(--font-body); font-size:11px;
+      cursor:pointer; width:100%; text-align:left; transition:border-color 0.2s,background 0.2s; font-weight:500;
+    }
+    .slot-pick-btn:hover{border-color:var(--accent); background:rgba(99,102,241,0.15);}
+    .slot-pick-list{background:var(--surface); border:1px solid var(--border); border-radius:10px; max-height:160px; overflow-y:auto; display:none; box-shadow:var(--glow-card);}
+    .slot-pick-list.open{display:block;}
+    .slot-pick-item{padding:9px 12px; cursor:pointer; font-size:11px; color:var(--text); border-bottom:1px solid var(--border); transition:background 0.1s;}
+    .slot-pick-item:last-child{border-bottom:none;}
+    .slot-pick-item:hover{background:rgba(99,102,241,0.1);}
+    .slot-pick-item-sub{font-size:10px; color:var(--muted); margin-top:2px;}
+    .slot-progress{height:2px; background:var(--surface3); border-radius:99px; overflow:hidden; display:none;}
+    .slot-progress.visible{display:block;}
+    .slot-progress-bar{height:100%; background:var(--grad-primary); width:0%; transition:width 0.3s ease;}
+    .compare-actions{
+      padding:12px 20px; border-bottom:1px solid var(--border);
+      display:flex; gap:8px; flex-wrap:wrap; background:rgba(11,17,33,0.4); flex-shrink:0;
+    }
+    .compare-action-btn{
+      background:rgba(99,102,241,0.08); border:1px solid var(--border); border-radius:8px;
+      padding:7px 14px; color:var(--muted); font-family:var(--font-body); font-size:11px;
+      cursor:pointer; transition:border-color 0.2s,background 0.2s,color 0.2s; white-space:nowrap; font-weight:500;
+    }
+    .compare-action-btn:hover{border-color:var(--accent); background:rgba(99,102,241,0.15); color:var(--accent-hi);}
+    .compare-action-btn:disabled{opacity:0.3; cursor:not-allowed;}
+    .compare-results{flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px;}
+    .compare-empty{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--muted); text-align:center; padding:40px;}
+    .compare-input-bar{
+      border-top:1px solid var(--border); padding:14px 24px; display:flex; gap:10px;
+      align-items:flex-end; background:rgba(11,17,33,0.7); backdrop-filter:blur(8px); flex-shrink:0;
+    }
+    .compare-input-bar textarea{
+      flex:1; background:var(--surface3); border:1px solid var(--border); border-radius:10px;
+      padding:12px 16px; color:var(--text); font-family:var(--font-body); font-size:13px;
+      resize:none; min-height:46px; max-height:160px; transition:border-color 0.2s,box-shadow 0.2s; line-height:1.5;
+    }
+    .compare-input-bar textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
+    .compare-input-bar textarea::placeholder{color:var(--muted2);}
+
+    .message.ai p{margin-bottom:10px;}
+    .message.ai strong{color:var(--accent-hi); font-weight:600;}
+    .message.ai ul,.message.ai ol{padding-left:20px; margin-bottom:10px;}
+    .message.ai li{margin-bottom:5px;}
+    .message.ai code{background:rgba(99,102,241,0.12); padding:2px 6px; border-radius:4px; font-size:12px; color:var(--accent-hi); font-family:'SFMono-Regular','Consolas',monospace;}
+
+    .overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:90; opacity:0; backdrop-filter:blur(4px); transition:opacity 0.3s ease;}
+    .overlay.visible{display:block; opacity:1;}
+    .sync-dot{width:6px; height:6px; border-radius:50%; background:var(--accent2); display:inline-block; margin-left:4px; opacity:0; transition:opacity 0.3s;}
+    .sync-dot.syncing{opacity:1; animation:pulse 1s infinite;}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:rgba(99,102,241,0.25); border-radius:99px;}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(99,102,241,0.45);}
+    @keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes pulse{0%,100%{opacity:0.3;}50%{opacity:1;}}
+
+    @media(max-width:768px){
+      .menu-btn{display:flex;}
+      .mode-switcher{display:none;}
+      .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:95;transform:translateX(-100%);width:280px;}
+      .sidebar.open{transform:translateX(0);}
+      .compare-top{flex-direction:column;}
+      .paper-slot{border-right:none;border-bottom:1px solid var(--border);min-height:unset;}
+      .auth-box{padding:28px 20px;}
     }
   </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-box">
     <div class="auth-logo">Kaly<span>pto</span></div>
-    <p class="auth-tagline">AI-powered research assistant</p>
+    <p class="auth-tagline">AI-powered research-study assistant</p>
     <div class="auth-tabs">
       <button class="auth-tab active" id="authTabLogin">Sign In</button>
       <button class="auth-tab" id="authTabRegister">Create Account</button>
     </div>
     <div id="authLoginForm">
       <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="auth-field">
-          <label>Email</label>
-          <input type="email" class="auth-input" id="loginEmail" placeholder="you@email.com" autocomplete="email"/>
-        </div>
-        <div class="auth-field">
-          <label>Password</label>
-          <input type="password" class="auth-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
-        </div>
+        <div class="auth-field"><label>Email</label><input type="email" class="auth-input" id="loginEmail" placeholder="you@email.com" autocomplete="email"/></div>
+        <div class="auth-field"><label>Password</label><input type="password" class="auth-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/></div>
         <button class="auth-submit" id="loginBtn">Sign In</button>
       </div>
     </div>
     <div id="authRegisterForm" style="display:none">
       <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="auth-field">
-          <label>Email</label>
-          <input type="email" class="auth-input" id="registerEmail" placeholder="you@email.com" autocomplete="email"/>
-        </div>
-        <div class="auth-field">
-          <label>Password</label>
-          <input type="password" class="auth-input" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password"/>
-        </div>
+        <div class="auth-field"><label>Email</label><input type="email" class="auth-input" id="registerEmail" placeholder="you@email.com" autocomplete="email"/></div>
+        <div class="auth-field"><label>Password</label><input type="password" class="auth-input" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password"/></div>
         <button class="auth-submit" id="registerBtn">Create Account</button>
       </div>
     </div>
     <div class="auth-error" id="authError"></div>
     <div class="auth-success" id="authSuccess"></div>
-    <div class="auth-divider">or</div>
+    <div class="auth-divider">or continue with</div>
     <button class="auth-google" id="googleBtn">
-      <svg width="16" height="16" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Continue with Google
     </button>
   </div>
@@ -281,10 +529,10 @@
 
 <div class="overlay" id="overlay"></div>
 
-<!-- HEADER -->
 <header>
   <div class="header-left">
     <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
+    <div class="logo-icon">K</div>
     <div class="logo">Kaly<span>pto</span></div>
   </div>
   <div class="mode-switcher">
@@ -292,16 +540,12 @@
     <button class="mode-btn" id="modeCompareBtn">⚖ Compare</button>
   </div>
   <div class="header-right">
-    <button id="themeToggle" style="background:none;border:1px solid var(--border);border-radius:999px;padding:4px 12px;color:var(--muted);font-family:var(--font-body);font-size:11px;cursor:pointer;">☀ Light</button>
+    <button id="themeToggle">☀ Light</button>
     <div class="status-pill" id="statusPill">No paper loaded</div>
-    <button class="user-btn" id="userBtn" style="display:none">
-      <span id="userEmail">—</span>
-      <span class="sync-dot" id="syncDot"></span>
-    </button>
+    <button class="user-btn" id="userBtn" style="display:none"><span id="userEmail">—</span><span class="sync-dot" id="syncDot"></span></button>
   </div>
 </header>
 
-<!-- APP BODY -->
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
@@ -360,9 +604,7 @@
     </div>
     <div class="input-bar">
       <textarea id="userInput" placeholder="Ask anything about the paper..." rows="1"></textarea>
-      <button class="send-btn" id="sendBtn" disabled>
-        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-      </button>
+      <button class="send-btn" id="sendBtn" disabled><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
     </div>
   </main>
 
@@ -370,11 +612,7 @@
     <div class="compare-top">
       <div class="paper-slot">
         <div class="slot-label">Paper A <span>A</span></div>
-        <div class="slot-paper-card" id="slotCardA">
-          <div class="slot-paper-name" id="slotNameA">—</div>
-          <div class="slot-paper-meta" id="slotMetaA">—</div>
-          <button class="slot-clear-btn" id="slotClearA">✕ Remove</button>
-        </div>
+        <div class="slot-paper-card" id="slotCardA"><div class="slot-paper-name" id="slotNameA">—</div><div class="slot-paper-meta" id="slotMetaA">—</div><button class="slot-clear-btn" id="slotClearA">✕ Remove</button></div>
         <div class="slot-upload" id="slotUploadA">
           <div class="slot-drop" id="slotDropA"><input type="file" id="slotFileA" accept=".pdf"/>📄 Upload PDF</div>
           <div class="slot-or">— or —</div>
@@ -384,12 +622,8 @@
         <div class="slot-progress" id="slotProgressA"><div class="slot-progress-bar" id="slotProgressBarA"></div></div>
       </div>
       <div class="paper-slot">
-        <div class="slot-label">Paper B <span style="background:var(--accent);color:#fff">B</span></div>
-        <div class="slot-paper-card" id="slotCardB">
-          <div class="slot-paper-name" id="slotNameB">—</div>
-          <div class="slot-paper-meta" id="slotMetaB">—</div>
-          <button class="slot-clear-btn" id="slotClearB">✕ Remove</button>
-        </div>
+        <div class="slot-label">Paper B <span style="background:var(--purple)">B</span></div>
+        <div class="slot-paper-card" id="slotCardB"><div class="slot-paper-name" id="slotNameB">—</div><div class="slot-paper-meta" id="slotMetaB">—</div><button class="slot-clear-btn" id="slotClearB">✕ Remove</button></div>
         <div class="slot-upload" id="slotUploadB">
           <div class="slot-drop" id="slotDropB"><input type="file" id="slotFileB" accept=".pdf"/>📄 Upload PDF</div>
           <div class="slot-or">— or —</div>
@@ -414,935 +648,332 @@
     </div>
     <div class="compare-input-bar">
       <textarea id="compareInput" placeholder="Ask a question about both papers..." rows="1"></textarea>
-      <button class="send-btn" id="compareSendBtn" disabled>
-        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-      </button>
+      <button class="send-btn" id="compareSendBtn" disabled><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// CONFIGURATION
-// ═══════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://ahlykwcpowwzpkbpcwrn.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobHlrd2Nwb3d3enBrYnBjd3JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MDY5NzcsImV4cCI6MjA5MDI4Mjk3N30.XRh-JWWAOClUozW6UWJlRPbfTAt2bGeuD__HTiyVs8A';
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const SUPABASE_URL='https://ahlykwcpowwzpkbpcwrn.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFobHlrd2Nwb3d3enBrYnBjd3JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MDY5NzcsImV4cCI6MjA5MDI4Mjk3N30.XRh-JWWAOClUozW6UWJlRPbfTAt2bGeuD__HTiyVs8A';
+var supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const WORKER_URL='https://broad-cell-efb3.jeremyjansenalgo.workers.dev';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+let paperText='',paperName='',chatHistory=[],isLoading=false,activeChatId=null,currentMode='chat',currentUser=null;
+let compareSlots={A:{name:'',text:''},B:{name:'',text:''}},compareLoading=false,compareHistory=[];
 
-const WORKER_URL = 'https://broad-cell-efb3.jeremyjansenalgo.workers.dev';
+const authScreen=document.getElementById('authScreen'),authError=document.getElementById('authError'),authSuccess=document.getElementById('authSuccess');
+const userBtn=document.getElementById('userBtn'),userEmailEl=document.getElementById('userEmail'),syncDot=document.getElementById('syncDot');
+const fileInput=document.getElementById('fileInput'),dropZone=document.getElementById('dropZone');
+const messagesDiv=document.getElementById('messages'),emptyState=document.getElementById('emptyState');
+const userInput=document.getElementById('userInput'),sendBtn=document.getElementById('sendBtn');
+const statusPill=document.getElementById('statusPill'),paperCard=document.getElementById('paperCard');
+const paperTitle=document.getElementById('paperTitle'),paperMeta=document.getElementById('paperMeta');
+const progressWrap=document.getElementById('progressWrap'),progressBar=document.getElementById('progressBar');
+const chatList=document.getElementById('chatList'),noChats=document.getElementById('noChats'),chatHeader=document.getElementById('chatHeader');
+const newChatBtn=document.getElementById('newChatBtn'),urlInput=document.getElementById('urlInput'),urlFetchBtn=document.getElementById('urlFetchBtn');
+const sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay'),menuBtn=document.getElementById('menuBtn');
+const chatView=document.getElementById('chatView'),compareView=document.getElementById('compareView');
+const compareResults=document.getElementById('compareResults'),compareEmpty=document.getElementById('compareEmpty');
+const compareInput=document.getElementById('compareInput'),compareSendBtn=document.getElementById('compareSendBtn');
+const quickBtns={summarize:document.getElementById('btnSummarize'),methods:document.getElementById('btnMethods'),findings:document.getElementById('btnFindings'),quiz:document.getElementById('btnQuiz'),flash:document.getElementById('btnFlash')};
+const cmpBtns={summary:document.getElementById('cmpSummary'),agree:document.getElementById('cmpAgree'),conflict:document.getElementById('cmpConflict'),table:document.getElementById('cmpTable')};
 
-// ═══════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════
-let paperText      = '';
-let paperName      = '';
-let chatHistory    = [];
-let isLoading      = false;
-let activeChatId   = null;
-let currentMode    = 'chat';
-let currentUser    = null;
-let compareSlots   = { A: { name: '', text: '' }, B: { name: '', text: '' } };
-let compareLoading = false;
-let compareHistory = []; // FIX #6: conversation memory for compare mode
+document.getElementById('authTabLogin').addEventListener('click',()=>{document.getElementById('authTabLogin').classList.add('active');document.getElementById('authTabRegister').classList.remove('active');document.getElementById('authLoginForm').style.display='';document.getElementById('authRegisterForm').style.display='none';authError.textContent='';authSuccess.textContent='';});
+document.getElementById('authTabRegister').addEventListener('click',()=>{document.getElementById('authTabRegister').classList.add('active');document.getElementById('authTabLogin').classList.remove('active');document.getElementById('authRegisterForm').style.display='';document.getElementById('authLoginForm').style.display='none';authError.textContent='';authSuccess.textContent='';});
 
-// ═══════════════════════════════════════════════════════════
-// DOM REFERENCES
-// ═══════════════════════════════════════════════════════════
-const authScreen   = document.getElementById('authScreen');
-const authError    = document.getElementById('authError');
-const authSuccess  = document.getElementById('authSuccess');
-const userBtn      = document.getElementById('userBtn');
-const userEmailEl  = document.getElementById('userEmail');
-const syncDot      = document.getElementById('syncDot');
-const fileInput    = document.getElementById('fileInput');
-const dropZone     = document.getElementById('dropZone');
-const messagesDiv  = document.getElementById('messages');
-const emptyState   = document.getElementById('emptyState');
-const userInput    = document.getElementById('userInput');
-const sendBtn      = document.getElementById('sendBtn');
-const statusPill   = document.getElementById('statusPill');
-const paperCard    = document.getElementById('paperCard');
-const paperTitle   = document.getElementById('paperTitle');
-const paperMeta    = document.getElementById('paperMeta');
-const progressWrap = document.getElementById('progressWrap');
-const progressBar  = document.getElementById('progressBar');
-const chatList     = document.getElementById('chatList');
-const noChats      = document.getElementById('noChats');
-const chatHeader   = document.getElementById('chatHeader');
-const newChatBtn   = document.getElementById('newChatBtn');
-const urlInput     = document.getElementById('urlInput');
-const urlFetchBtn  = document.getElementById('urlFetchBtn');
-const sidebar      = document.getElementById('sidebar');
-const overlay      = document.getElementById('overlay');
-const menuBtn      = document.getElementById('menuBtn');
-const chatView     = document.getElementById('chatView');
-const compareView  = document.getElementById('compareView');
-const compareResults = document.getElementById('compareResults');
-const compareEmpty   = document.getElementById('compareEmpty');
-const compareInput   = document.getElementById('compareInput');
-const compareSendBtn = document.getElementById('compareSendBtn');
+document.getElementById('loginBtn').addEventListener('click',async()=>{
+  const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
+  authError.textContent='';authSuccess.textContent='';
+  if(!email||!password){authError.textContent='Please fill in both fields.';return;}
+  const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='Signing in…';
+  try{const{error}=await supabase.auth.signInWithPassword({email,password});if(error){authError.textContent=error.message;btn.disabled=false;btn.textContent='Sign In';}}
+  catch(err){authError.textContent='Unexpected error. Please try again.';btn.disabled=false;btn.textContent='Sign In';}
+});
+document.getElementById('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginBtn').click();});
 
-const quickBtns = {
-  summarize: document.getElementById('btnSummarize'),
-  methods:   document.getElementById('btnMethods'),
-  findings:  document.getElementById('btnFindings'),
-  quiz:      document.getElementById('btnQuiz'),
-  flash:     document.getElementById('btnFlash'),
-};
-const cmpBtns = {
-  summary:  document.getElementById('cmpSummary'),
-  agree:    document.getElementById('cmpAgree'),
-  conflict: document.getElementById('cmpConflict'),
-  table:    document.getElementById('cmpTable'),
-};
-
-// ═══════════════════════════════════════════════════════════
-// AUTH — TAB SWITCHING
-// ═══════════════════════════════════════════════════════════
-document.getElementById('authTabLogin').addEventListener('click', () => {
-  document.getElementById('authTabLogin').classList.add('active');
-  document.getElementById('authTabRegister').classList.remove('active');
-  document.getElementById('authLoginForm').style.display = '';
-  document.getElementById('authRegisterForm').style.display = 'none';
-  authError.textContent = '';
-  authSuccess.textContent = '';
+document.getElementById('registerBtn').addEventListener('click',async()=>{
+  const email=document.getElementById('registerEmail').value.trim(),password=document.getElementById('registerPassword').value;
+  authError.textContent='';authSuccess.textContent='';
+  if(!email||!password){authError.textContent='Please fill in both fields.';return;}
+  if(password.length<6){authError.textContent='Password must be at least 6 characters.';return;}
+  const btn=document.getElementById('registerBtn');btn.disabled=true;btn.textContent='Creating account…';
+  try{
+    const{data,error}=await supabase.auth.signUp({email,password});
+    if(error){authError.textContent=error.message;}
+    else{if(data.session){authSuccess.textContent='✓ Account created! Logging you in…';}else{authSuccess.textContent='✓ Check your email to confirm, then sign in.';btn.disabled=false;btn.textContent='Create Account';}}
+  }catch(err){authError.textContent='Unexpected error. Please try again.';btn.disabled=false;btn.textContent='Create Account';}
 });
 
-document.getElementById('authTabRegister').addEventListener('click', () => {
-  document.getElementById('authTabRegister').classList.add('active');
-  document.getElementById('authTabLogin').classList.remove('active');
-  document.getElementById('authRegisterForm').style.display = '';
-  document.getElementById('authLoginForm').style.display = 'none';
-  authError.textContent = '';
-  authSuccess.textContent = '';
+document.getElementById('googleBtn').addEventListener('click',async()=>{authError.textContent='';try{const{error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});if(error)authError.textContent=error.message;}catch(err){authError.textContent='Could not open Google sign-in.';}});
+
+let signOutPending=false;
+userBtn.addEventListener('click',async()=>{
+  if(!signOutPending){signOutPending=true;userBtn.style.color='var(--danger)';userBtn.style.borderColor='var(--danger)';userEmailEl.textContent='Click again to sign out';setTimeout(()=>{if(signOutPending){signOutPending=false;const email=currentUser?.email||'Logged in';userEmailEl.textContent=email.length>20?email.slice(0,18)+'…':email;userBtn.style.color='';userBtn.style.borderColor='';}},3000);}
+  else{await saveCurrentChat();await supabase.auth.signOut();}
 });
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — SIGN IN
-// ═══════════════════════════════════════════════════════════
-document.getElementById('loginBtn').addEventListener('click', async () => {
-  const email    = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  authError.textContent   = '';
-  authSuccess.textContent = '';
-  if (!email || !password) { authError.textContent = 'Please fill in both fields.'; return; }
-  const btn = document.getElementById('loginBtn');
-  btn.disabled    = true;
-  btn.textContent = 'Signing in…';
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      authError.textContent = error.message;
-      btn.disabled    = false;
-      btn.textContent = 'Sign In';
-    }
-  } catch (err) {
-    authError.textContent = 'Unexpected error. Please try again.';
-    btn.disabled    = false;
-    btn.textContent = 'Sign In';
+supabase.auth.onAuthStateChange(async(event,session)=>{
+  if(session?.user){
+    currentUser=session.user;authScreen.classList.add('hidden');
+    const email=session.user.email||'Logged in';userEmailEl.textContent=email.length>20?email.slice(0,18)+'…':email;userBtn.style.display='flex';
+    try{await loadChatsFromSupabase();}catch(err){console.error('Error loading chats:',err);activeChatId='chat_'+Date.now();}
+  }else{
+    currentUser=null;activeChatId=null;authScreen.classList.remove('hidden');userBtn.style.display='none';
+    paperText='';paperName='';chatHistory=[];clearMessagesUI();paperCard.classList.remove('visible');
+    statusPill.textContent='No paper loaded';statusPill.classList.remove('has-paper');sendBtn.disabled=true;
+    Object.values(quickBtns).forEach(b=>b.disabled=true);chatHeader.innerHTML='No paper loaded';
+    chatList.querySelectorAll('.chat-entry').forEach(e=>e.remove());noChats.style.display='block';
+    const lb=document.getElementById('loginBtn');lb.disabled=false;lb.textContent='Sign In';
   }
 });
 
-document.getElementById('loginPassword').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('loginBtn').click();
-});
+function showSync(){syncDot.classList.add('syncing');}
+function hideSync(){syncDot.classList.remove('syncing');}
 
-// ═══════════════════════════════════════════════════════════
-// AUTH — CREATE ACCOUNT
-// ═══════════════════════════════════════════════════════════
-document.getElementById('registerBtn').addEventListener('click', async () => {
-  const email    = document.getElementById('registerEmail').value.trim();
-  const password = document.getElementById('registerPassword').value;
-  authError.textContent   = '';
-  authSuccess.textContent = '';
-  if (!email || !password) { authError.textContent = 'Please fill in both fields.'; return; }
-  if (password.length < 6) { authError.textContent = 'Password must be at least 6 characters.'; return; }
-  const btn = document.getElementById('registerBtn');
-  btn.disabled    = true;
-  btn.textContent = 'Creating account…';
-  try {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      authError.textContent = error.message;
-    } else {
-      if (data.session) {
-        authSuccess.textContent = '✓ Account created! Logging you in…';
-      } else {
-        authSuccess.textContent = '✓ Account created! Check your email to confirm, then sign in.';
-        btn.disabled    = false;
-        btn.textContent = 'Create Account';
-      }
-    }
-  } catch (err) {
-    authError.textContent = 'Unexpected error. Please try again.';
-    btn.disabled    = false;
-    btn.textContent = 'Create Account';
-  }
-});
-
-// ═══════════════════════════════════════════════════════════
-// AUTH — GOOGLE OAuth
-// ═══════════════════════════════════════════════════════════
-document.getElementById('googleBtn').addEventListener('click', async () => {
-  authError.textContent = '';
-  try {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.href }
-    });
-    if (error) authError.textContent = error.message;
-  } catch (err) {
-    authError.textContent = 'Could not open Google sign-in.';
-  }
-});
-
-// ═══════════════════════════════════════════════════════════
-// AUTH — SIGN OUT
-// FIX #9: saveCurrentChat() before signing out
-// ═══════════════════════════════════════════════════════════
-let signOutPending = false;
-userBtn.addEventListener('click', async () => {
-  if (!signOutPending) {
-    signOutPending = true;
-    userBtn.style.borderColor = 'var(--danger)';
-    userBtn.style.color = 'var(--danger)';
-    userEmailEl.textContent = 'Click again to sign out';
-    setTimeout(() => {
-      if (signOutPending) {
-        signOutPending = false;
-        const email = currentUser?.email || 'Logged in';
-        userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
-        userBtn.style.borderColor = '';
-        userBtn.style.color = '';
-      }
-    }, 3000);
-  } else {
-    await saveCurrentChat(); // FIX #9: persist last state before clearing session
-    await supabase.auth.signOut();
-  }
-});
-
-// ═══════════════════════════════════════════════════════════
-// AUTH STATE LISTENER
-// ═══════════════════════════════════════════════════════════
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) {
-    currentUser = session.user;
-    authScreen.classList.add('hidden');
-    const email = session.user.email || 'Logged in';
-    userEmailEl.textContent = email.length > 20 ? email.slice(0, 18) + '…' : email;
-    userBtn.style.display = 'flex';
-    try {
-      await loadChatsFromSupabase();
-    } catch (err) {
-      console.error('Error loading chats after login:', err);
-      activeChatId = 'chat_' + Date.now();
-    }
-  } else {
-    currentUser  = null;
-    activeChatId = null;
-    authScreen.classList.remove('hidden');
-    userBtn.style.display = 'none';
-    paperText = ''; paperName = ''; chatHistory = [];
-    clearMessagesUI();
-    paperCard.classList.remove('visible');
-    statusPill.textContent = 'No paper loaded';
-    statusPill.classList.remove('has-paper');
-    sendBtn.disabled = true;
-    Object.values(quickBtns).forEach(btn => btn.disabled = true);
-    chatHeader.innerHTML = 'No paper loaded';
-    chatList.querySelectorAll('.chat-entry').forEach(e => e.remove());
-    noChats.style.display = 'block';
-    const loginBtn = document.getElementById('loginBtn');
-    loginBtn.disabled    = false;
-    loginBtn.textContent = 'Sign In';
-  }
-});
-
-// ═══════════════════════════════════════════════════════════
-// SYNC INDICATOR
-// ═══════════════════════════════════════════════════════════
-function showSync() { syncDot.classList.add('syncing'); }
-function hideSync() { syncDot.classList.remove('syncing'); }
-
-// ═══════════════════════════════════════════════════════════
-// SUPABASE CHAT OPERATIONS
-// ═══════════════════════════════════════════════════════════
-async function loadChatsFromSupabase() {
-  if (!currentUser) return [];
-  showSync();
-  const { data, error } = await supabase
-    .from('chats')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('updated_at', { ascending: false });
-  hideSync();
-  if (error) { console.error('Load chats error:', error); return []; }
-  const chats = data || [];
-  renderChatList(chats);
-  const lastId = localStorage.getItem('kalypto_active_chat');
-  if (lastId && chats.find(c => c.id === lastId)) {
-    activeChatId = lastId;
-    restoreChat(chats.find(c => c.id === lastId));
-  } else if (chats.length > 0) {
-    activeChatId = chats[0].id;
-    restoreChat(chats[0]);
-  } else {
-    activeChatId = 'chat_' + Date.now();
-    localStorage.setItem('kalypto_active_chat', activeChatId);
-  }
+async function loadChatsFromSupabase(){
+  if(!currentUser)return[];showSync();
+  const{data,error}=await supabase.from('chats').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false});
+  hideSync();if(error){console.error('Load chats error:',error);return[];}
+  const chats=data||[];renderChatList(chats);
+  const lastId=localStorage.getItem('kalypto_active_chat');
+  if(lastId&&chats.find(c=>c.id===lastId)){activeChatId=lastId;restoreChat(chats.find(c=>c.id===lastId));}
+  else if(chats.length>0){activeChatId=chats[0].id;restoreChat(chats[0]);}
+  else{activeChatId='chat_'+Date.now();localStorage.setItem('kalypto_active_chat',activeChatId);}
   return chats;
 }
 
-async function saveCurrentChat() {
-  if (!activeChatId || !currentUser) return;
-  // FIX #3: don't save blank rows when there's nothing to persist
-  if (!paperName && chatHistory.length === 0) return;
-
+async function saveCurrentChat(){
+  if(!activeChatId||!currentUser)return;
+  if(!paperName&&chatHistory.length===0)return;
   showSync();
-  const row = {
-    id:         activeChatId,
-    user_id:    currentUser.id,
-    paper_name: paperName,
-    paper_text: paperText,
-    history:    chatHistory,
-    preview:    chatHistory.find(m => m.role === 'user')?.content?.slice(0, 60) || 'No messages yet',
-    updated_at: new Date().toISOString()
-  };
-  const { error } = await supabase.from('chats').upsert(row);
-  hideSync();
-  if (error) console.error('Save chat error:', error);
-  const { data } = await supabase
-    .from('chats').select('*')
-    .eq('user_id', currentUser.id)
-    .order('updated_at', { ascending: false });
-  renderChatList(data || []);
+  const row={id:activeChatId,user_id:currentUser.id,paper_name:paperName,paper_text:paperText,history:chatHistory,preview:chatHistory.find(m=>m.role==='user')?.content?.slice(0,60)||'No messages yet',updated_at:new Date().toISOString()};
+  const{error}=await supabase.from('chats').upsert(row);hideSync();if(error)console.error('Save chat error:',error);
+  const{data}=await supabase.from('chats').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false});renderChatList(data||[]);
 }
 
-async function deleteChatFromSupabase(chatId) {
-  if (!currentUser) return;
-  showSync();
-  const { error } = await supabase.from('chats').delete()
-    .eq('id', chatId).eq('user_id', currentUser.id);
-  hideSync();
-  if (error) console.error('Delete chat error:', error);
+async function deleteChatFromSupabase(chatId){if(!currentUser)return;showSync();const{error}=await supabase.from('chats').delete().eq('id',chatId).eq('user_id',currentUser.id);hideSync();if(error)console.error('Delete chat error:',error);}
+
+function restoreChat(chat){
+  paperText=chat.paper_text||'';paperName=chat.paper_name||'';chatHistory=chat.history||[];activeChatId=chat.id;localStorage.setItem('kalypto_active_chat',chat.id);clearMessagesUI();
+  if(paperName){paperTitle.textContent=paperName;paperMeta.textContent='Restored from saved chat';paperCard.classList.add('visible');statusPill.textContent='● Paper loaded';statusPill.classList.add('has-paper');sendBtn.disabled=false;Object.values(quickBtns).forEach(b=>b.disabled=false);chatHeader.innerHTML=`Paper: <span>${paperName}</span>`;}
+  if(chatHistory.length>0){emptyState.style.display='none';chatHistory.forEach(msg=>renderMessage(msg.role,msg.content,false));messagesDiv.scrollTop=messagesDiv.scrollHeight;}
 }
 
-function restoreChat(chat) {
-  paperText    = chat.paper_text  || '';
-  paperName    = chat.paper_name  || '';
-  chatHistory  = chat.history     || [];
-  activeChatId = chat.id;
-  localStorage.setItem('kalypto_active_chat', chat.id);
-  clearMessagesUI();
-  if (paperName) {
-    paperTitle.textContent = paperName;
-    paperMeta.textContent  = 'Restored from saved chat';
-    paperCard.classList.add('visible');
-    statusPill.textContent = '● Paper loaded';
-    statusPill.classList.add('has-paper');
-    sendBtn.disabled = false;
-    Object.values(quickBtns).forEach(btn => btn.disabled = false);
-    chatHeader.innerHTML = `Paper: <span>${paperName}</span>`;
-  }
-  if (chatHistory.length > 0) {
-    emptyState.style.display = 'none';
-    chatHistory.forEach(msg => renderMessage(msg.role, msg.content, false));
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
+async function createNewChat(){
+  await saveCurrentChat();activeChatId='chat_'+Date.now();localStorage.setItem('kalypto_active_chat',activeChatId);
+  paperText='';paperName='';chatHistory=[];clearMessagesUI();paperCard.classList.remove('visible');
+  statusPill.textContent='No paper loaded';statusPill.classList.remove('has-paper');sendBtn.disabled=true;
+  Object.values(quickBtns).forEach(b=>b.disabled=true);chatHeader.innerHTML='No paper loaded';
+  const{data}=await supabase.from('chats').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false});
+  renderChatList(data||[]);noChats.style.display='none';
+  const ph=document.createElement('div');ph.className='chat-entry active';ph.id='new-chat-placeholder';
+  ph.innerHTML=`<div class="chat-entry-info"><div class="chat-entry-paper" style="color:var(--muted)">New chat</div><div class="chat-entry-preview">Upload a paper to begin</div></div>`;
+  chatList.insertBefore(ph,chatList.firstChild);closeSidebarOnMobile();
 }
 
-async function createNewChat() {
-  await saveCurrentChat();
-  activeChatId = 'chat_' + Date.now();
-  localStorage.setItem('kalypto_active_chat', activeChatId);
-  paperText = ''; paperName = ''; chatHistory = [];
-  clearMessagesUI();
-  paperCard.classList.remove('visible');
-  statusPill.textContent = 'No paper loaded';
-  statusPill.classList.remove('has-paper');
-  sendBtn.disabled = true;
-  Object.values(quickBtns).forEach(btn => btn.disabled = true);
-  chatHeader.innerHTML = 'No paper loaded';
-
-  const { data } = await supabase
-    .from('chats').select('*')
-    .eq('user_id', currentUser.id)
-    .order('updated_at', { ascending: false });
-  renderChatList(data || []);
-
-  // FIX #8: inject a placeholder entry so the new chat is visually highlighted
-  noChats.style.display = 'none';
-  const placeholder = document.createElement('div');
-  placeholder.className = 'chat-entry active';
-  placeholder.id = 'new-chat-placeholder';
-  placeholder.innerHTML = `
-    <div class="chat-entry-info">
-      <div class="chat-entry-paper" style="color:var(--muted)">New chat</div>
-      <div class="chat-entry-preview">Upload a paper to begin</div>
-    </div>`;
-  chatList.insertBefore(placeholder, chatList.firstChild);
-
-  closeSidebarOnMobile();
+async function switchToChat(chatId){
+  if(chatId===activeChatId)return;await saveCurrentChat();
+  const{data}=await supabase.from('chats').select('*').eq('id',chatId).eq('user_id',currentUser.id).single();if(data)restoreChat(data);
+  const{data:all}=await supabase.from('chats').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false});renderChatList(all||[]);closeSidebarOnMobile();
 }
 
-async function switchToChat(chatId) {
-  if (chatId === activeChatId) return;
-  await saveCurrentChat();
-  const { data } = await supabase
-    .from('chats').select('*')
-    .eq('id', chatId).eq('user_id', currentUser.id)
-    .single();
-  if (data) restoreChat(data);
-  const { data: all } = await supabase
-    .from('chats').select('*')
-    .eq('user_id', currentUser.id)
-    .order('updated_at', { ascending: false });
-  renderChatList(all || []);
-  closeSidebarOnMobile();
+async function deleteChat(chatId,e){
+  e.stopPropagation();await deleteChatFromSupabase(chatId);if(chatId===activeChatId)createNewChat();
+  const{data}=await supabase.from('chats').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false});renderChatList(data||[]);
 }
 
-async function deleteChat(chatId, e) {
-  e.stopPropagation();
-  await deleteChatFromSupabase(chatId);
-  if (chatId === activeChatId) createNewChat();
-  const { data } = await supabase
-    .from('chats').select('*')
-    .eq('user_id', currentUser.id)
-    .order('updated_at', { ascending: false });
-  renderChatList(data || []);
-}
-
-function renderChatList(chats) {
-  chatList.querySelectorAll('.chat-entry').forEach(e => e.remove());
-  if (!chats || chats.length === 0) { noChats.style.display = 'block'; return; }
-  noChats.style.display = 'none';
-  chats.forEach(chat => {
-    const entry = document.createElement('div');
-    entry.className = 'chat-entry' + (chat.id === activeChatId ? ' active' : '');
-    const date = chat.updated_at
-      ? new Date(chat.updated_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
-      : '';
-    entry.innerHTML = `
-      <div class="chat-entry-info">
-        <div class="chat-entry-paper">${chat.paper_name || 'No paper'}</div>
-        <div class="chat-entry-preview">${chat.preview || 'Empty chat'}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-        <div class="chat-entry-date">${date}</div>
-        <button class="chat-delete-btn" title="Delete chat">✕</button>
-      </div>`;
-    entry.addEventListener('click', () => switchToChat(chat.id));
-    entry.querySelector('.chat-delete-btn').addEventListener('click', e => deleteChat(chat.id, e));
-    chatList.appendChild(entry);
+function renderChatList(chats){
+  chatList.querySelectorAll('.chat-entry').forEach(e=>e.remove());
+  if(!chats||chats.length===0){noChats.style.display='block';return;}noChats.style.display='none';
+  chats.forEach(chat=>{
+    const entry=document.createElement('div');entry.className='chat-entry'+(chat.id===activeChatId?' active':'');
+    const date=chat.updated_at?new Date(chat.updated_at).toLocaleDateString('en-PH',{month:'short',day:'numeric'}):'';
+    entry.innerHTML=`<div class="chat-entry-info"><div class="chat-entry-paper">${chat.paper_name||'No paper'}</div><div class="chat-entry-preview">${chat.preview||'Empty chat'}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="chat-entry-date">${date}</div><button class="chat-delete-btn" title="Delete chat">✕</button></div>`;
+    entry.addEventListener('click',()=>switchToChat(chat.id));entry.querySelector('.chat-delete-btn').addEventListener('click',e=>deleteChat(chat.id,e));chatList.appendChild(entry);
   });
 }
 
-function clearMessagesUI() {
-  Array.from(messagesDiv.children).forEach(c => { if (c.id !== 'emptyState') c.remove(); });
-  emptyState.style.display = '';
+function clearMessagesUI(){Array.from(messagesDiv.children).forEach(c=>{if(c.id!=='emptyState')c.remove();});emptyState.style.display='';}
+
+document.getElementById('modeChatBtn').addEventListener('click',()=>setMode('chat'));
+document.getElementById('modeCompareBtn').addEventListener('click',()=>setMode('compare'));
+function setMode(mode){
+  currentMode=mode;
+  if(mode==='chat'){document.getElementById('modeChatBtn').classList.add('active');document.getElementById('modeCompareBtn').classList.remove('active');chatView.style.display='';compareView.classList.remove('active');sidebar.style.display='';sidebar.style.transform='';}
+  else{document.getElementById('modeCompareBtn').classList.add('active');document.getElementById('modeChatBtn').classList.remove('active');chatView.style.display='none';compareView.classList.add('active');sidebar.style.display='none';populatePickLists();}
 }
 
-// ═══════════════════════════════════════════════════════════
-// MODE SWITCHER (Chat ↔ Compare)
-// ═══════════════════════════════════════════════════════════
-document.getElementById('modeChatBtn').addEventListener('click', () => setMode('chat'));
-document.getElementById('modeCompareBtn').addEventListener('click', () => setMode('compare'));
-
-function setMode(mode) {
-  currentMode = mode;
-  if (mode === 'chat') {
-    document.getElementById('modeChatBtn').classList.add('active');
-    document.getElementById('modeCompareBtn').classList.remove('active');
-    chatView.style.display = '';
-    compareView.classList.remove('active');
-    sidebar.style.display = '';
-    sidebar.style.transform = '';
-  } else {
-    document.getElementById('modeCompareBtn').classList.add('active');
-    document.getElementById('modeChatBtn').classList.remove('active');
-    chatView.style.display = 'none';
-    compareView.classList.add('active');
-    sidebar.style.display = 'none';
-    populatePickLists();
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// COMPARE MODE
-// ═══════════════════════════════════════════════════════════
-async function populatePickLists() {
-  if (!currentUser) return;
-  const { data: chats } = await supabase
-    .from('chats').select('*')
-    .eq('user_id', currentUser.id)
-    .order('updated_at', { ascending: false });
-  ['A', 'B'].forEach(slot => {
-    const list = document.getElementById(`slotPickList${slot}`);
-    list.innerHTML = '';
-    const valid = (chats || []).filter(c => c.paper_text);
-    if (valid.length === 0) {
-      list.innerHTML = '<div class="slot-pick-item" style="color:var(--muted)">No saved chats yet</div>';
-      return;
-    }
-    valid.forEach(chat => {
-      const item = document.createElement('div');
-      item.className = 'slot-pick-item';
-      item.innerHTML = `<div>${chat.paper_name || 'Unnamed'}</div><div class="slot-pick-item-sub">${chat.preview || ''}</div>`;
-      item.addEventListener('click', () => {
-        compareSlots[slot] = { name: chat.paper_name, text: chat.paper_text };
-        showSlotCard(slot, chat.paper_name, 'From saved chat');
-        list.classList.remove('open');
-      });
-      list.appendChild(item);
-    });
+async function populatePickLists(){
+  if(!currentUser)return;
+  const{data:chats}=await supabase.from('chats').select('*').eq('user_id',currentUser.id).order('updated_at',{ascending:false});
+  ['A','B'].forEach(slot=>{
+    const list=document.getElementById(`slotPickList${slot}`);list.innerHTML='';
+    const valid=(chats||[]).filter(c=>c.paper_text);
+    if(valid.length===0){list.innerHTML='<div class="slot-pick-item" style="color:var(--muted2)">No saved chats yet</div>';return;}
+    valid.forEach(chat=>{const item=document.createElement('div');item.className='slot-pick-item';item.innerHTML=`<div>${chat.paper_name||'Unnamed'}</div><div class="slot-pick-item-sub">${chat.preview||''}</div>`;item.addEventListener('click',()=>{compareSlots[slot]={name:chat.paper_name,text:chat.paper_text};showSlotCard(slot,chat.paper_name,'From saved chat');list.classList.remove('open');});list.appendChild(item);});
   });
 }
 
-function showSlotCard(slot, name, meta) {
-  document.getElementById(`slotCard${slot}`).classList.add('visible');
-  document.getElementById(`slotUpload${slot}`).style.display = 'none';
-  document.getElementById(`slotName${slot}`).textContent = name;
-  document.getElementById(`slotMeta${slot}`).textContent  = meta;
-  updateCompareButtons();
+function showSlotCard(slot,name,meta){document.getElementById(`slotCard${slot}`).classList.add('visible');document.getElementById(`slotUpload${slot}`).style.display='none';document.getElementById(`slotName${slot}`).textContent=name;document.getElementById(`slotMeta${slot}`).textContent=meta;updateCompareButtons();}
+function clearSlot(slot){compareSlots[slot]={name:'',text:''};compareHistory=[];document.getElementById(`slotCard${slot}`).classList.remove('visible');document.getElementById(`slotUpload${slot}`).style.display='';updateCompareButtons();}
+function updateCompareButtons(){const both=compareSlots.A.text&&compareSlots.B.text;Object.values(cmpBtns).forEach(b=>b.disabled=!both);compareSendBtn.disabled=!both;}
+
+async function loadSlotPDF(slot,file){
+  const pEl=document.getElementById(`slotProgress${slot}`),bEl=document.getElementById(`slotProgressBar${slot}`);pEl.classList.add('visible');bEl.style.width='10%';
+  try{
+    const buf=await file.arrayBuffer();bEl.style.width='40%';const pdf=await pdfjsLib.getDocument({data:buf}).promise;let txt='';
+    for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const ct=await pg.getTextContent();txt+=ct.items.map(x=>x.str).join(' ')+'\n\n';bEl.style.width=(40+(i/pdf.numPages)*55)+'%';}
+    compareSlots[slot]={name:file.name,text:txt.slice(0,12000)};bEl.style.width='100%';setTimeout(()=>{pEl.classList.remove('visible');bEl.style.width='0%';},500);showSlotCard(slot,file.name,`${pdf.numPages} pages`);
+  }catch(err){pEl.classList.remove('visible');addCompareMessage(`⚠️ Error reading PDF: ${err.message}`);}
 }
 
-function clearSlot(slot) {
-  compareSlots[slot] = { name: '', text: '' };
-  compareHistory = []; // FIX #6: reset conversation history when a slot changes
-  document.getElementById(`slotCard${slot}`).classList.remove('visible');
-  document.getElementById(`slotUpload${slot}`).style.display = '';
-  updateCompareButtons();
+document.getElementById('slotFileA').addEventListener('change',e=>{const f=e.target.files[0];if(f)loadSlotPDF('A',f);e.target.value='';});
+document.getElementById('slotFileB').addEventListener('change',e=>{const f=e.target.files[0];if(f)loadSlotPDF('B',f);e.target.value='';});
+['A','B'].forEach(slot=>{const drop=document.getElementById(`slotDrop${slot}`);drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='var(--accent-hi)';});drop.addEventListener('dragleave',()=>{drop.style.borderColor='';});drop.addEventListener('drop',e=>{e.preventDefault();drop.style.borderColor='';const f=e.dataTransfer.files[0];if(f)loadSlotPDF(slot,f);});});
+document.getElementById('slotClearA').addEventListener('click',()=>clearSlot('A'));document.getElementById('slotClearB').addEventListener('click',()=>clearSlot('B'));
+document.getElementById('slotPickBtnA').addEventListener('click',()=>{populatePickLists();document.getElementById('slotPickListA').classList.toggle('open');});
+document.getElementById('slotPickBtnB').addEventListener('click',()=>{populatePickLists();document.getElementById('slotPickListB').classList.toggle('open');});
+
+function buildCompareSystemPrompt(){return `You are Kalypto, an AI research assistant specializing in comparing academic papers.\nAlways refer to them as "Paper A" and "Paper B". Be clear, structured, and educational.\nWhen generating tables, use markdown table format with | separators.\n\nPAPER A — ${compareSlots.A.name}:\n${compareSlots.A.text}\n\nPAPER B — ${compareSlots.B.name}:\n${compareSlots.B.text}`;}
+
+async function sendCompareMessage(promptText,showAsUserMessage=true){
+  if(!compareSlots.A.text||!compareSlots.B.text){addCompareMessage('⚠️ Please load both papers first.');return;}
+  if(compareLoading)return;
+  if(showAsUserMessage){addCompareUserMessage(promptText);compareInput.value='';compareInput.style.height='auto';}
+  compareLoading=true;compareSendBtn.disabled=true;Object.values(cmpBtns).forEach(b=>b.disabled=true);
+  const lm=addCompareLoading();compareHistory.push({role:'user',content:promptText});
+  try{
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:2048,messages:[{role:'system',content:buildCompareSystemPrompt()},...compareHistory]})});
+    const data=await res.json();lm.remove();
+    if(data.error){addCompareMessage(`⚠️ ${data.error.message}`);compareHistory.pop();}
+    else{const reply=data.choices?.[0]?.message?.content||'No response.';addCompareMessage(reply);compareHistory.push({role:'assistant',content:reply});}
+  }catch(err){lm.remove();addCompareMessage(`⚠️ ${err.message}`);compareHistory.pop();}
+  compareLoading=false;compareSendBtn.disabled=false;updateCompareButtons();
 }
 
-function updateCompareButtons() {
-  const both = compareSlots.A.text && compareSlots.B.text;
-  Object.values(cmpBtns).forEach(btn => btn.disabled = !both);
-  compareSendBtn.disabled = !both;
+cmpBtns.summary.addEventListener('click',()=>sendCompareMessage('Give me a side-by-side summary of Paper A and Paper B. Cover: (1) problem addressed, (2) approach/methodology, (3) main findings.',false));
+cmpBtns.agree.addEventListener('click',()=>sendCompareMessage('What do Paper A and Paper B agree on? List key points of agreement with explanations.',false));
+cmpBtns.conflict.addEventListener('click',()=>sendCompareMessage('What are the contradictions or disagreements between Paper A and Paper B? List and explain.',false));
+cmpBtns.table.addEventListener('click',()=>sendCompareMessage('Generate a markdown comparison table between Paper A and Paper B. Include: Research Question, Methodology, Sample/Data, Key Findings, Limitations, Conclusions.',false));
+
+compareSendBtn.addEventListener('click',()=>{const t=compareInput.value.trim();if(t)sendCompareMessage(t);});
+compareInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const t=compareInput.value.trim();if(t)sendCompareMessage(t);}});
+compareInput.addEventListener('input',()=>{compareInput.style.height='auto';compareInput.style.height=Math.min(compareInput.scrollHeight,160)+'px';});
+
+function addCompareMessage(text){compareEmpty.style.display='none';const d=document.createElement('div');d.className='message ai';d.style.maxWidth='100%';d.innerHTML=`<span class="sender">Kalypto</span>${formatText(text)}`;compareResults.appendChild(d);compareResults.scrollTop=compareResults.scrollHeight;}
+function addCompareUserMessage(text){compareEmpty.style.display='none';const d=document.createElement('div');d.className='message user';d.style.maxWidth='100%';d.textContent=text;compareResults.appendChild(d);compareResults.scrollTop=compareResults.scrollHeight;}
+function addCompareLoading(){compareEmpty.style.display='none';const d=document.createElement('div');d.className='message ai loading';d.style.maxWidth='100%';d.innerHTML=`<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`;compareResults.appendChild(d);compareResults.scrollTop=compareResults.scrollHeight;return d;}
+
+function openSidebar(){sidebar.classList.add('open');overlay.classList.add('visible');document.body.style.overflow='hidden';}
+function closeSidebar(){sidebar.classList.remove('open');overlay.classList.remove('visible');document.body.style.overflow='';}
+function closeSidebarOnMobile(){if(window.innerWidth<=768)closeSidebar();}
+menuBtn.addEventListener('click',openSidebar);overlay.addEventListener('click',closeSidebar);
+
+document.getElementById('tabUpload').addEventListener('click',()=>{document.getElementById('tabUpload').classList.add('active');document.getElementById('tabUrl').classList.remove('active');document.getElementById('panelUpload').classList.add('active');document.getElementById('panelUrl').classList.remove('active');});
+document.getElementById('tabUrl').addEventListener('click',()=>{document.getElementById('tabUrl').classList.add('active');document.getElementById('tabUpload').classList.remove('active');document.getElementById('panelUrl').classList.add('active');document.getElementById('panelUpload').classList.remove('active');});
+
+function normalizeArxivUrl(url){const m=url.match(/arxiv\.org\/(?:abs|pdf)\/([^\s?#]+)/i);return m?`https://arxiv.org/pdf/${m[1]}`:null;}
+async function loadFromUrl(){
+  const raw=urlInput.value.trim();if(!raw)return;urlFetchBtn.disabled=true;urlFetchBtn.textContent='…';
+  let pdfUrl=normalizeArxivUrl(raw);if(!pdfUrl&&raw.toLowerCase().endsWith('.pdf')){pdfUrl=raw.startsWith('http')?raw:'https://'+raw;}
+  if(!pdfUrl){addMessage('ai','⚠️ Unsupported link. Kalypto supports ArXiv links and direct .pdf URLs.');urlFetchBtn.disabled=false;urlFetchBtn.textContent='Load';return;}
+  try{
+    progressWrap.classList.add('visible');progressBar.style.width='20%';
+    const res=await fetch(WORKER_URL+'/fetch-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:pdfUrl})});
+    if(!res.ok){const errData=await res.json().catch(()=>({}));throw new Error(errData.error||`Could not fetch PDF (${res.status}).`);}
+    progressBar.style.width='50%';const buf=await res.arrayBuffer();
+    const parts=pdfUrl.split('/');const fn=parts[parts.length-1]+(pdfUrl.endsWith('.pdf')?'':'.pdf');
+    await parsePDFBuffer(buf,fn);
+  }catch(err){progressWrap.classList.remove('visible');progressBar.style.width='0%';addMessage('ai',`⚠️ Error: ${err.message}`);}
+  urlFetchBtn.disabled=false;urlFetchBtn.textContent='Load';
 }
+urlFetchBtn.addEventListener('click',loadFromUrl);
+urlInput.addEventListener('keydown',e=>{if(e.key==='Enter')loadFromUrl();});
 
-async function loadSlotPDF(slot, file) {
-  const pEl = document.getElementById(`slotProgress${slot}`);
-  const bEl = document.getElementById(`slotProgressBar${slot}`);
-  pEl.classList.add('visible'); bEl.style.width = '10%';
-  try {
-    const buf = await file.arrayBuffer();
-    bEl.style.width = '40%';
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    let txt = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const pg = await pdf.getPage(i);
-      const ct = await pg.getTextContent();
-      txt += ct.items.map(x => x.str).join(' ') + '\n\n';
-      bEl.style.width = (40 + (i / pdf.numPages) * 55) + '%';
-    }
-    compareSlots[slot] = { name: file.name, text: txt.slice(0, 12000) };
-    bEl.style.width = '100%';
-    setTimeout(() => { pEl.classList.remove('visible'); bEl.style.width = '0%'; }, 500);
-    showSlotCard(slot, file.name, `${pdf.numPages} pages`);
-  } catch (err) {
-    pEl.classList.remove('visible');
-    addCompareMessage(`⚠️ Error reading PDF: ${err.message}`);
-  }
-}
-
-// FIX #7: reset value so the same file can be re-selected
-document.getElementById('slotFileA').addEventListener('change', e => {
-  const f = e.target.files[0];
-  if (f) loadSlotPDF('A', f);
-  e.target.value = '';
-});
-document.getElementById('slotFileB').addEventListener('change', e => {
-  const f = e.target.files[0];
-  if (f) loadSlotPDF('B', f);
-  e.target.value = '';
-});
-
-['A', 'B'].forEach(slot => {
-  const drop = document.getElementById(`slotDrop${slot}`);
-  drop.addEventListener('dragover',  e => { e.preventDefault(); drop.style.borderColor = 'var(--accent)'; });
-  drop.addEventListener('dragleave', () => { drop.style.borderColor = ''; });
-  drop.addEventListener('drop',      e => { e.preventDefault(); drop.style.borderColor = ''; const f = e.dataTransfer.files[0]; if (f) loadSlotPDF(slot, f); });
-});
-
-document.getElementById('slotClearA').addEventListener('click', () => clearSlot('A'));
-document.getElementById('slotClearB').addEventListener('click', () => clearSlot('B'));
-document.getElementById('slotPickBtnA').addEventListener('click', () => { populatePickLists(); document.getElementById('slotPickListA').classList.toggle('open'); });
-document.getElementById('slotPickBtnB').addEventListener('click', () => { populatePickLists(); document.getElementById('slotPickListB').classList.toggle('open'); });
-
-function buildCompareSystemPrompt() {
-  return `You are Kalypto, an AI research assistant specializing in comparing academic papers.
-Always refer to them as "Paper A" and "Paper B". Be clear, structured, and educational.
-When generating tables, use markdown table format with | separators.
-
-PAPER A — ${compareSlots.A.name}:
-${compareSlots.A.text}
-
-PAPER B — ${compareSlots.B.name}:
-${compareSlots.B.text}`;
-}
-
-// FIX #6: compare mode now maintains full conversation history
-async function sendCompareMessage(promptText, showAsUserMessage = true) {
-  if (!compareSlots.A.text || !compareSlots.B.text) { addCompareMessage('⚠️ Please load both papers first.'); return; }
-  if (compareLoading) return;
-  if (showAsUserMessage) { addCompareUserMessage(promptText); compareInput.value = ''; compareInput.style.height = 'auto'; }
-  compareLoading = true;
-  compareSendBtn.disabled = true;
-  Object.values(cmpBtns).forEach(btn => btn.disabled = true);
-  const lm = addCompareLoading();
-
-  compareHistory.push({ role: 'user', content: promptText });
-
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 2048,
-        messages: [
-          { role: 'system', content: buildCompareSystemPrompt() },
-          ...compareHistory
-        ]
-      })
-    });
-    const data = await res.json();
-    lm.remove();
-    if (data.error) {
-      addCompareMessage(`⚠️ ${data.error.message}`);
-      compareHistory.pop(); // undo push on error
-    } else {
-      const reply = data.choices?.[0]?.message?.content || 'No response.';
-      addCompareMessage(reply);
-      compareHistory.push({ role: 'assistant', content: reply });
-    }
-  } catch (err) {
-    lm.remove();
-    addCompareMessage(`⚠️ ${err.message}`);
-    compareHistory.pop(); // undo push on error
-  }
-  compareLoading = false;
-  compareSendBtn.disabled = false;
-  updateCompareButtons();
-}
-
-cmpBtns.summary.addEventListener('click',  () => sendCompareMessage('Give me a side-by-side summary of Paper A and Paper B. Cover: (1) problem addressed, (2) approach/methodology, (3) main findings.', false));
-cmpBtns.agree.addEventListener('click',    () => sendCompareMessage('What do Paper A and Paper B agree on? List key points of agreement with explanations.', false));
-cmpBtns.conflict.addEventListener('click', () => sendCompareMessage('What are the contradictions or disagreements between Paper A and Paper B? List and explain.', false));
-cmpBtns.table.addEventListener('click',    () => sendCompareMessage('Generate a markdown comparison table between Paper A and Paper B. Include: Research Question, Methodology, Sample/Data, Key Findings, Limitations, Conclusions.', false));
-
-compareSendBtn.addEventListener('click', () => { const t = compareInput.value.trim(); if (t) sendCompareMessage(t); });
-compareInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const t = compareInput.value.trim(); if (t) sendCompareMessage(t); } });
-compareInput.addEventListener('input', () => { compareInput.style.height = 'auto'; compareInput.style.height = Math.min(compareInput.scrollHeight, 160) + 'px'; });
-
-function addCompareMessage(text)     { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message ai'; d.style.maxWidth = '100%'; d.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}`; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; }
-function addCompareUserMessage(text) { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message user'; d.style.maxWidth = '100%'; d.textContent = text; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; }
-function addCompareLoading()         { compareEmpty.style.display = 'none'; const d = document.createElement('div'); d.className = 'message ai loading'; d.style.maxWidth = '100%'; d.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`; compareResults.appendChild(d); compareResults.scrollTop = compareResults.scrollHeight; return d; }
-
-// ═══════════════════════════════════════════════════════════
-// MOBILE SIDEBAR
-// ═══════════════════════════════════════════════════════════
-function openSidebar()          { sidebar.classList.add('open'); overlay.classList.add('visible'); document.body.style.overflow = 'hidden'; }
-function closeSidebar()         { sidebar.classList.remove('open'); overlay.classList.remove('visible'); document.body.style.overflow = ''; }
-function closeSidebarOnMobile() { if (window.innerWidth <= 768) closeSidebar(); }
-menuBtn.addEventListener('click', openSidebar);
-overlay.addEventListener('click', closeSidebar);
-
-// ═══════════════════════════════════════════════════════════
-// UPLOAD TABS
-// ═══════════════════════════════════════════════════════════
-document.getElementById('tabUpload').addEventListener('click', () => {
-  document.getElementById('tabUpload').classList.add('active');
-  document.getElementById('tabUrl').classList.remove('active');
-  document.getElementById('panelUpload').classList.add('active');
-  document.getElementById('panelUrl').classList.remove('active');
-});
-document.getElementById('tabUrl').addEventListener('click', () => {
-  document.getElementById('tabUrl').classList.add('active');
-  document.getElementById('tabUpload').classList.remove('active');
-  document.getElementById('panelUrl').classList.add('active');
-  document.getElementById('panelUpload').classList.remove('active');
-});
-
-// ═══════════════════════════════════════════════════════════
-// URL FETCH
-// FIX #1: proxy through Cloudflare Worker to bypass CORS
-// ═══════════════════════════════════════════════════════════
-function normalizeArxivUrl(url) {
-  const m = url.match(/arxiv\.org\/(?:abs|pdf)\/([^\s?#]+)/i);
-  return m ? `https://arxiv.org/pdf/${m[1]}` : null;
-}
-
-async function loadFromUrl() {
-  const raw = urlInput.value.trim();
-  if (!raw) return;
-  urlFetchBtn.disabled = true;
-  urlFetchBtn.textContent = '…';
-
-  let pdfUrl = normalizeArxivUrl(raw);
-  if (!pdfUrl && raw.toLowerCase().endsWith('.pdf')) {
-    pdfUrl = raw.startsWith('http') ? raw : 'https://' + raw;
-  }
-  if (!pdfUrl) {
-    addMessage('ai', '⚠️ Unsupported link. Kalypto supports ArXiv links and direct .pdf URLs.');
-    urlFetchBtn.disabled = false;
-    urlFetchBtn.textContent = 'Load';
-    return;
-  }
-
-  try {
-    progressWrap.classList.add('visible'); progressBar.style.width = '20%';
-
-    // FIX #1: route through Worker instead of fetching directly (avoids CORS)
-    const res = await fetch(WORKER_URL + '/fetch-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: pdfUrl })
-    });
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || `Could not fetch PDF (${res.status}).`);
-    }
-
-    progressBar.style.width = '50%';
-    const buf = await res.arrayBuffer();
-    const parts = pdfUrl.split('/');
-    const fn = parts[parts.length - 1] + (pdfUrl.endsWith('.pdf') ? '' : '.pdf');
-    await parsePDFBuffer(buf, fn);
-  } catch (err) {
-    progressWrap.classList.remove('visible');
-    progressBar.style.width = '0%';
-    addMessage('ai', `⚠️ Error: ${err.message}`);
-  }
-  urlFetchBtn.disabled = false;
-  urlFetchBtn.textContent = 'Load';
-}
-
-urlFetchBtn.addEventListener('click', loadFromUrl);
-urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadFromUrl(); });
-
-// ═══════════════════════════════════════════════════════════
-// PDF PARSING
-// ═══════════════════════════════════════════════════════════
-async function parsePDFBuffer(arrayBuffer, displayName) {
-  // FIX #8: remove the new-chat placeholder once a paper is actually loaded
+async function parsePDFBuffer(arrayBuffer,displayName){
   document.getElementById('new-chat-placeholder')?.remove();
-
-  if (chatHistory.length > 0) {
-    await saveCurrentChat();
-    activeChatId = 'chat_' + Date.now();
-    localStorage.setItem('kalypto_active_chat', activeChatId);
-    chatHistory = [];
-    clearMessagesUI();
-  }
-  paperName = displayName;
-  progressBar.style.width = '60%';
-  try {
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const pg = await pdf.getPage(i);
-      const ct = await pg.getTextContent();
-      fullText += ct.items.map(x => x.str).join(' ') + '\n\n';
-      progressBar.style.width = (60 + (i / pdf.numPages) * 35) + '%';
-    }
-    paperText = fullText.slice(0, 12000);
-    progressBar.style.width = '100%';
-    setTimeout(() => { progressWrap.classList.remove('visible'); progressBar.style.width = '0%'; }, 600);
-
-    paperTitle.textContent = paperName;
-    paperMeta.textContent  = `${pdf.numPages} pages · ${Math.round(fullText.length / 1000)}k chars`;
-    paperCard.classList.add('visible');
-    statusPill.textContent = '● Paper loaded';
-    statusPill.classList.add('has-paper');
-    chatHeader.innerHTML = `Paper: <span>${paperName}</span>`;
-    sendBtn.disabled = false;
-    Object.values(quickBtns).forEach(btn => btn.disabled = false);
-
-    // FIX #4: push welcome message to chatHistory so it persists on restore
-    const welcomeMsg = `**Paper loaded:** ${paperName}\n\nI've read through the document. Ask me anything about it, or use the quick actions on the left.`;
-    chatHistory.push({ role: 'model', content: welcomeMsg });
-    addMessage('ai', welcomeMsg);
-
-    await saveCurrentChat();
-    closeSidebarOnMobile();
-  } catch (err) {
-    progressWrap.classList.remove('visible');
-    addMessage('ai', `⚠️ Error reading PDF: ${err.message}`);
-  }
+  if(chatHistory.length>0){await saveCurrentChat();activeChatId='chat_'+Date.now();localStorage.setItem('kalypto_active_chat',activeChatId);chatHistory=[];clearMessagesUI();}
+  paperName=displayName;progressBar.style.width='60%';
+  try{
+    const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;let fullText='';
+    for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const ct=await pg.getTextContent();fullText+=ct.items.map(x=>x.str).join(' ')+'\n\n';progressBar.style.width=(60+(i/pdf.numPages)*35)+'%';}
+    paperText=fullText.slice(0,12000);progressBar.style.width='100%';
+    setTimeout(()=>{progressWrap.classList.remove('visible');progressBar.style.width='0%';},600);
+    paperTitle.textContent=paperName;paperMeta.textContent=`${pdf.numPages} pages · ${Math.round(fullText.length/1000)}k chars`;
+    paperCard.classList.add('visible');statusPill.textContent='● Paper loaded';statusPill.classList.add('has-paper');
+    chatHeader.innerHTML=`Paper: <span>${paperName}</span>`;sendBtn.disabled=false;Object.values(quickBtns).forEach(b=>b.disabled=false);
+    const welcomeMsg=`**Paper loaded:** ${paperName}\n\nI've read through the document. Ask me anything about it, or use the quick actions on the left.`;
+    chatHistory.push({role:'model',content:welcomeMsg});addMessage('ai',welcomeMsg);
+    await saveCurrentChat();closeSidebarOnMobile();
+  }catch(err){progressWrap.classList.remove('visible');addMessage('ai',`⚠️ Error reading PDF: ${err.message}`);}
 }
 
-async function loadPDF(file) {
-  progressWrap.classList.add('visible');
-  progressBar.style.width = '10%';
-  const buf = await file.arrayBuffer();
-  progressBar.style.width = '30%';
-  await parsePDFBuffer(buf, file.name);
+async function loadPDF(file){progressWrap.classList.add('visible');progressBar.style.width='10%';const buf=await file.arrayBuffer();progressBar.style.width='30%';await parsePDFBuffer(buf,file.name);}
+fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f&&f.type==='application/pdf')loadPDF(f);e.target.value='';});
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')loadPDF(f);});
+
+async function sendMessage(overrideText){
+  const text=(overrideText||userInput.value).trim();if(!text||isLoading)return;
+  addMessage('user',text);userInput.value='';userInput.style.height='auto';isLoading=true;sendBtn.disabled=true;
+  const lm=addLoadingMessage();chatHistory.push({role:'user',content:text});
+  try{
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1024,messages:[{role:'system',content:`You are Kalypto, an AI research & study assistant. Help users understand academic papers and studying notes. Be clear and educational. Use markdown formatting.\n\nPAPER CONTENT:\n${paperText}`},...chatHistory.map(m=>({role:m.role==='user'?'user':'assistant',content:m.content}))]})});
+    const data=await res.json();lm.remove();
+    if(data.error){addMessage('ai',`⚠️ API Error: ${data.error.message}`);chatHistory.pop();}
+    else{const reply=data.choices?.[0]?.message?.content||'No response.';addMessage('ai',reply);chatHistory.push({role:'model',content:reply});await saveCurrentChat();}
+  }catch(err){lm.remove();addMessage('ai',`⚠️ Network error: ${err.message}`);chatHistory.pop();}
+  isLoading=false;sendBtn.disabled=false;
 }
 
-// FIX #7: reset value so the same file can be re-selected
-fileInput.addEventListener('change', e => {
-  const f = e.target.files[0];
-  if (f && f.type === 'application/pdf') loadPDF(f);
-  e.target.value = '';
-});
-
-dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop',      e => { e.preventDefault(); dropZone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f && f.type === 'application/pdf') loadPDF(f); });
-
-// ═══════════════════════════════════════════════════════════
-// CHAT SEND
-// ═══════════════════════════════════════════════════════════
-async function sendMessage(overrideText) {
-  const text = (overrideText || userInput.value).trim();
-  if (!text || isLoading) return;
-
-  addMessage('user', text);
-  userInput.value = '';
-  userInput.style.height = 'auto';
-  isLoading = true;
-  sendBtn.disabled = true;
-  const lm = addLoadingMessage();
-  chatHistory.push({ role: 'user', content: text });
-
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1024,
-        messages: [
-          { role: 'system', content: `You are Kalypto, an AI research assistant. Help users understand academic papers. Be clear and educational. Use markdown formatting.\n\nPAPER CONTENT:\n${paperText}` },
-          ...chatHistory.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
-        ]
-      })
-    });
-    const data = await res.json();
-    lm.remove();
-    if (data.error) {
-      addMessage('ai', `⚠️ API Error: ${data.error.message}`);
-      chatHistory.pop();
-    } else {
-      const reply = data.choices?.[0]?.message?.content || 'No response.';
-      addMessage('ai', reply);
-      chatHistory.push({ role: 'model', content: reply });
-      await saveCurrentChat();
-    }
-  } catch (err) {
-    lm.remove();
-    addMessage('ai', `⚠️ Network error: ${err.message}`);
-    chatHistory.pop();
-  }
-  isLoading = false;
-  sendBtn.disabled = false;
+function renderMessage(role,text,animate=true){
+  if(emptyState)emptyState.style.display='none';
+  const div=document.createElement('div');div.className=`message ${role==='user'?'user':'ai'}`;if(!animate)div.style.animation='none';
+  if(role!=='user'){
+    div.innerHTML=`<span class="sender">Kalypto</span>${formatText(text)}<div class="message-actions"><button class="copy-btn" data-copy="plain">📋 Copy text</button><button class="copy-btn" data-copy="markdown">{ } Copy markdown</button></div>`;
+    div.dataset.raw=text;
+    div.querySelectorAll('.copy-btn').forEach(btn=>{btn.addEventListener('click',()=>{const raw=div.dataset.raw;const content=btn.dataset.copy==='plain'?raw.replace(/\*\*(.*?)\*\*/g,'$1').replace(/`(.*?)`/g,'$1').replace(/^- /gm,'• '):raw;navigator.clipboard.writeText(content).then(()=>{const o=btn.textContent;btn.textContent='✓ Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent=o;btn.classList.remove('copied');},1500);});});});
+  }else{div.textContent=text;}
+  messagesDiv.appendChild(div);messagesDiv.scrollTop=messagesDiv.scrollHeight;return div;
 }
 
-// ═══════════════════════════════════════════════════════════
-// MESSAGE RENDERING
-// ═══════════════════════════════════════════════════════════
-function renderMessage(role, text, animate = true) {
-  if (emptyState) emptyState.style.display = 'none';
-  const div = document.createElement('div');
-  div.className = `message ${role === 'user' ? 'user' : 'ai'}`;
-  if (!animate) div.style.animation = 'none';
-  if (role !== 'user') {
-    div.innerHTML = `<span class="sender">Kalypto</span>${formatText(text)}<div class="message-actions"><button class="copy-btn" data-copy="plain">📋 Copy text</button><button class="copy-btn" data-copy="markdown">{ } Copy markdown</button></div>`;
-    div.dataset.raw = text;
-    div.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const raw = div.dataset.raw;
-        const content = btn.dataset.copy === 'plain'
-          ? raw.replace(/\*\*(.*?)\*\*/g, '$1').replace(/`(.*?)`/g, '$1').replace(/^- /gm, '• ')
-          : raw;
-        navigator.clipboard.writeText(content).then(() => {
-          const o = btn.textContent;
-          btn.textContent = '✓ Copied!';
-          btn.classList.add('copied');
-          setTimeout(() => { btn.textContent = o; btn.classList.remove('copied'); }, 1500);
-        });
-      });
-    });
-  } else {
-    div.textContent = text;
-  }
-  messagesDiv.appendChild(div);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  return div;
-}
+function addMessage(role,text){return renderMessage(role,text,true);}
+function addLoadingMessage(){if(emptyState)emptyState.style.display='none';const div=document.createElement('div');div.className='message ai loading';div.innerHTML=`<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`;messagesDiv.appendChild(div);messagesDiv.scrollTop=messagesDiv.scrollHeight;return div;}
 
-function addMessage(role, text) { return renderMessage(role, text, true); }
-
-function addLoadingMessage() {
-  if (emptyState) emptyState.style.display = 'none';
-  const div = document.createElement('div');
-  div.className = 'message ai loading';
-  div.innerHTML = `<span class="sender">Kalypto</span><span class="dots"><span>•</span><span>•</span><span>•</span></span>`;
-  messagesDiv.appendChild(div);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  return div;
-}
-
-// FIX #5: strip newlines between </li><li> before the global \n → <br> pass
-function formatText(text) {
+function formatText(text){
   return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-    .replace(/((\|.+\|\n?)+)/g, m => {
-      const rows = m.trim().split('\n').filter(r => !/^[\s|:-]+$/.test(r));
-      if (rows.length < 2) return m;
-      return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:12px">${
-        rows.map((row, i) => `<tr>${
-          row.split('|').filter((_, j, a) => j > 0 && j < a.length - 1).map(cell =>
-            i === 0
-              ? `<th style="border:1px solid var(--border);padding:6px 10px;background:var(--surface2);text-align:left">${cell.trim()}</th>`
-              : `<td style="border:1px solid var(--border);padding:6px 10px">${cell.trim()}</td>`
-          ).join('')
-        }</tr>`).join('')
-      }</table></div>`;
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`(.*?)`/g,'<code>$1</code>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>')
+    .replace(/((\|.+\|\n?)+)/g,m=>{
+      const rows=m.trim().split('\n').filter(r=>!/^[\s|:-]+$/.test(r));if(rows.length<2)return m;
+      return `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:12px">${rows.map((row,i)=>`<tr>${row.split('|').filter((_,j,a)=>j>0&&j<a.length-1).map(cell=>i===0?`<th style="border:1px solid var(--border);padding:6px 10px;background:rgba(99,102,241,0.1);text-align:left;color:var(--accent-hi);font-weight:600">${cell.trim()}</th>`:`<td style="border:1px solid var(--border);padding:6px 10px">${cell.trim()}</td>`).join('')}</tr>`).join('')}</table></div>`;
     })
-    .replace(/<\/li>\n<li>/g, '</li><li>') // FIX #5: prevent <br> injection inside <ul>
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>')
-    .replace(/^(.+)$/, '<p>$1</p>');
+    .replace(/<\/li>\n<li>/g,'</li><li>')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>')
+    .replace(/^(.+)$/,'<p>$1</p>');
 }
 
-// ═══════════════════════════════════════════════════════════
-// QUICK ACTIONS + CONTROLS
-// ═══════════════════════════════════════════════════════════
-newChatBtn.addEventListener('click', createNewChat);
+newChatBtn.addEventListener('click',createNewChat);
+quickBtns.summarize.addEventListener('click',()=>{sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.');closeSidebarOnMobile();});
+quickBtns.methods.addEventListener('click',()=>{sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?');closeSidebarOnMobile();});
+quickBtns.findings.addEventListener('click',()=>{sendMessage('What are the key findings and conclusions of this paper? What do the results mean?');closeSidebarOnMobile();});
+quickBtns.quiz.addEventListener('click',()=>{sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.');closeSidebarOnMobile();});
+quickBtns.flash.addEventListener('click',()=>{sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.');closeSidebarOnMobile();});
 
-quickBtns.summarize.addEventListener('click', () => { sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.'); closeSidebarOnMobile(); });
-quickBtns.methods.addEventListener('click',   () => { sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?'); closeSidebarOnMobile(); });
-quickBtns.findings.addEventListener('click',  () => { sendMessage('What are the key findings and conclusions of this paper? What do the results mean?'); closeSidebarOnMobile(); });
-quickBtns.quiz.addEventListener('click',      () => { sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.'); closeSidebarOnMobile(); });
-quickBtns.flash.addEventListener('click',     () => { sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.'); closeSidebarOnMobile(); });
+userInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+userInput.addEventListener('input',()=>{userInput.style.height='auto';userInput.style.height=Math.min(userInput.scrollHeight,160)+'px';});
+sendBtn.addEventListener('click',()=>sendMessage());
 
-userInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-userInput.addEventListener('input', () => { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px'; });
-sendBtn.addEventListener('click', () => sendMessage());
-
-// ═══════════════════════════════════════════════════════════
-// THEME TOGGLE
-// ═══════════════════════════════════════════════════════════
-const themeToggle = document.getElementById('themeToggle');
-function applyTheme(t) {
-  if (t === 'light') { document.body.classList.add('light'); themeToggle.textContent = '🌙 Dark'; }
-  else { document.body.classList.remove('light'); themeToggle.textContent = '☀ Light'; }
-}
-applyTheme(localStorage.getItem('kalypto_theme') || 'dark');
-themeToggle.addEventListener('click', () => {
-  const n = document.body.classList.contains('light') ? 'dark' : 'light';
-  localStorage.setItem('kalypto_theme', n);
-  applyTheme(n);
-});
+const themeToggle=document.getElementById('themeToggle');
+function applyTheme(t){if(t==='light'){document.body.classList.add('light');themeToggle.textContent='🌙 Dark';}else{document.body.classList.remove('light');themeToggle.textContent='☀ Light';}}
+applyTheme(localStorage.getItem('kalypto_theme')||'dark');
+themeToggle.addEventListener('click',()=>{const n=document.body.classList.contains('light')?'dark':'light';localStorage.setItem('kalypto_theme',n);applyTheme(n);});
 </script>
 </body>
 </html>
