@@ -545,7 +545,6 @@
 </head>
 <body>
 
-<!-- AUTH MODAL -->
 <div class="auth-modal" id="authModal">
   <div class="auth-box">
     <button class="auth-modal-close" id="authModalClose" aria-label="Close">✕</button>
@@ -581,7 +580,6 @@
 
 <div class="overlay" id="overlay"></div>
 
-<!-- HEADER -->
 <header>
   <div class="header-left">
     <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
@@ -600,10 +598,8 @@
   </div>
 </header>
 
-<!-- APP -->
 <div class="app" id="app">
 
-  <!-- CHAT PAGE -->
   <div class="page page-chat" id="chatPage">
     <aside class="sidebar" id="chatSidebar">
       <div class="sidebar-top">
@@ -671,7 +667,6 @@
     </main>
   </div>
 
-  <!-- COMPARE PAGE -->
   <div class="page page-compare hidden-right" id="comparePage">
     <aside class="cmp-sidebar" id="cmpSidebar">
       <div class="cmp-sidebar-inner">
@@ -927,7 +922,6 @@ supabase.auth.onAuthStateChange(async(event,session)=>{
 function showSync(){syncDot.classList.add('syncing');}
 function hideSync(){syncDot.classList.remove('syncing');}
 
-/* ── CHAT PERSISTENCE ─────────────────────────────────────── */
 async function loadChats(){
   showSync();
   const chats=await getChats();
@@ -1018,7 +1012,6 @@ function clearMessagesUI(){
   emptyState.style.display='';
 }
 
-/* ── PAGE NAVIGATION ──────────────────────────────────────── */
 function navigate(page){
   if(page===currentPage)return;
   const prev=currentPage;
@@ -1053,7 +1046,6 @@ window.addEventListener('popstate',()=>{
   navigate(window.location.hash==='#compare'?'compare':'chat');
 });
 
-/* ── COMPARE PICK LISTS ───────────────────────────────────── */
 async function populatePickLists(){
   const chats=await getChats();
   ['A','B'].forEach(slot=>{
@@ -1144,7 +1136,6 @@ $('slotClearB').addEventListener('click',()=>clearSlot('B'));
 $('slotPickBtnA').addEventListener('click',async()=>{await populatePickLists();$('slotPickListA').classList.toggle('open');});
 $('slotPickBtnB').addEventListener('click',async()=>{await populatePickLists();$('slotPickListB').classList.toggle('open');});
 
-/* ── COMPARE MESSAGING ────────────────────────────────────── */
 function buildComparePrompt(){
   return `You are Kalypto, an AI research assistant specializing in comparing academic papers.\nAlways refer to them as "Paper A" and "Paper B". Be clear, structured, and educational.\nUse markdown tables when generating comparisons.\n\nPAPER A — ${compareSlots.A.name}:\n${compareSlots.A.text}\n\nPAPER B — ${compareSlots.B.name}:\n${compareSlots.B.text}`;
 }
@@ -1191,7 +1182,6 @@ function addCompareLoading(){
   compareResults.appendChild(d);compareResults.scrollTop=compareResults.scrollHeight;return d;
 }
 
-/* ── MOBILE SIDEBAR ───────────────────────────────────────── */
 function openSidebar(){
   const sb=currentPage==='compare'?cmpSidebar:chatSidebar;
   sb.classList.add('open');overlay.classList.add('visible');document.body.style.overflow='hidden';
@@ -1204,7 +1194,6 @@ function closeSidebarOnMobile(){if(window.innerWidth<=768)closeSidebar();}
 menuBtn.addEventListener('click',openSidebar);
 overlay.addEventListener('click',closeSidebar);
 
-/* ── UPLOAD TABS ──────────────────────────────────────────── */
 $('tabUpload').addEventListener('click',()=>{
   $('tabUpload').classList.add('active');$('tabUrl').classList.remove('active');
   $('panelUpload').classList.add('active');$('panelUrl').classList.remove('active');
@@ -1214,7 +1203,6 @@ $('tabUrl').addEventListener('click',()=>{
   $('panelUrl').classList.add('active');$('panelUpload').classList.remove('active');
 });
 
-/* ── PDF LOADING ──────────────────────────────────────────── */
 function normalizeArxivUrl(url){
   const m=url.match(/arxiv\.org\/(?:abs|pdf)\/([^\s?#]+)/i);
   return m?`https://arxiv.org/pdf/${m[1]}`:null;
@@ -1280,7 +1268,6 @@ dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.a
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')loadPDF(f);});
 
-/* ── CHAT MESSAGING ───────────────────────────────────────── */
 async function sendMessage(override){
   const text=(override||userInput.value).trim();if(!text||isLoading)return;
   addMessage('user',text);userInput.value='';userInput.style.height='auto';
@@ -1325,7 +1312,6 @@ function addLoadingMessage(){
   messagesDiv.appendChild(div);messagesDiv.scrollTop=messagesDiv.scrollHeight;return div;
 }
 
-/* ── FORMAT TEXT ──────────────────────────────────────────── */
 function formatText(text){
   let h=text
     .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
@@ -1350,7 +1336,6 @@ function formatText(text){
   }).join('');
 }
 
-/* ── QUICK ACTIONS ────────────────────────────────────────── */
 newChatBtn.addEventListener('click',createNewChat);
 quickBtns.summarize.addEventListener('click',()=>{sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.');closeSidebarOnMobile();});
 quickBtns.methods.addEventListener('click',()=>{sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?');closeSidebarOnMobile();});
@@ -1361,7 +1346,6 @@ userInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.prev
 userInput.addEventListener('input',()=>{userInput.style.height='auto';userInput.style.height=Math.min(userInput.scrollHeight,150)+'px';});
 sendBtn.addEventListener('click',()=>sendMessage());
 
-/* ── THEME ────────────────────────────────────────────────── */
 const themeToggle=$('themeToggle');
 function applyTheme(t){
   if(t==='light'){document.body.classList.add('light');themeToggle.textContent='🌙 Dark';}
@@ -1373,7 +1357,6 @@ themeToggle.addEventListener('click',()=>{
   localStorage.setItem('kalypto_theme',n);applyTheme(n);
 });
 
-/* ── INIT ─────────────────────────────────────────────────── */
 (async()=>{
   const{data:{session}}=await supabase.auth.getSession();
   if(!session){
