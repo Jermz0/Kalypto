@@ -232,8 +232,7 @@
       transition:transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease;
       will-change:transform,opacity;
     }
-    .page-chat{}
-    .page-compare{}
+
     .page.hidden-left{transform:translateX(-48px);opacity:0;pointer-events:none;}
     .page.hidden-right{transform:translateX(48px);opacity:0;pointer-events:none;}
 
@@ -881,8 +880,12 @@ userBtn.addEventListener('click',async()=>{
 
 async function migrateGuestChats(){
   const guests=getGuestChats();
-  if(!guests.length)return;
+  if(!guests.length){localStorage.removeItem('kalypto_guest_chats');return;}
+  const{data:cloudChats}=await supabase.from('chats').select('id,updated_at').eq('user_id',currentUser.id);
+  const cloudMap={};
+  if(cloudChats){cloudChats.forEach(c=>{cloudMap[c.id]=c.updated_at;});}
   for(const chat of guests){
+    if(cloudMap[chat.id]&&chat.updated_at&&new Date(cloudMap[chat.id])>new Date(chat.updated_at)){continue;}
     await supabase.from('chats').upsert({...chat,user_id:currentUser.id});
   }
   localStorage.removeItem('kalypto_guest_chats');
@@ -903,6 +906,8 @@ supabase.auth.onAuthStateChange(async(event,session)=>{
   }else{
     currentUser=null;
     signOutPending=false;
+    activeChatId='chat_'+Date.now();
+    localStorage.setItem('kalypto_active_chat',activeChatId);
     userBtn.style.display='none';
     userBtn.style.color='';userBtn.style.borderColor='';
     headerSignInBtn.style.display='';
@@ -994,11 +999,29 @@ async function deleteChat(chatId,e){
 }
 
 function renderChatList(chats){
+  const existing=Array.from(chatList.querySelectorAll('.chat-entry'));
+  if(existing.length===(chats||[]).length){
+    const unchanged=existing.every((el,i)=>{
+      const c=chats[i];
+      return el.dataset.id===c.id&&el.dataset.updatedAt===c.updated_at;
+    });
+    if(unchanged){
+      existing.forEach(el=>{
+        const isActive=el.dataset.id===activeChatId;
+        if(isActive&&!el.classList.contains('active'))el.classList.add('active');
+        if(!isActive&&el.classList.contains('active'))el.classList.remove('active');
+      });
+      return;
+    }
+  }
   chatList.querySelectorAll('.chat-entry').forEach(e=>e.remove());
   if(!chats||!chats.length){noChats.style.display='block';return;}
   noChats.style.display='none';
   chats.forEach(chat=>{
-    const entry=document.createElement('div');entry.className='chat-entry'+(chat.id===activeChatId?' active':'');
+    const entry=document.createElement('div');
+    entry.className='chat-entry'+(chat.id===activeChatId?' active':'');
+    entry.dataset.id=chat.id;
+    entry.dataset.updatedAt=chat.updated_at||'';
     const date=chat.updated_at?new Date(chat.updated_at).toLocaleDateString('en-PH',{month:'short',day:'numeric'}):'';
     entry.innerHTML=`<div class="chat-entry-info"><div class="chat-entry-paper">${chat.paper_name||'No paper'}</div><div class="chat-entry-preview">${chat.preview||'Empty chat'}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="chat-entry-date">${date}</div><button class="chat-delete-btn" title="Delete">✕</button></div>`;
     entry.addEventListener('click',()=>switchToChat(chat.id));
@@ -1071,14 +1094,20 @@ function showSlotCard(slot,name,meta){
   $(`slotUpload${slot}`).style.display='none';
   $(`slotName${slot}`).textContent=name;
   $(`slotMeta${slot}`).textContent=meta;
+  compareResults.querySelectorAll('.message').forEach(el=>el.remove());
+  compareEmpty.style.display='';
+  compareHistory=[];
   updateCompareButtons();
   updateCompareHeader();
 }
 
 function clearSlot(slot){
-  compareSlots[slot]={name:'',text:''};compareHistory=[];
+  compareSlots[slot]={name:'',text:''};
+  compareHistory=[];
   $(`slotCard${slot}`).classList.remove('visible');
   $(`slotUpload${slot}`).style.display='';
+  compareResults.querySelectorAll('.message').forEach(el=>el.remove());
+  compareEmpty.style.display='';
   updateCompareButtons();
   updateCompareHeader();
 }
@@ -1133,8 +1162,8 @@ $('slotFileB').addEventListener('change',e=>{const f=e.target.files[0];if(f)load
 });
 $('slotClearA').addEventListener('click',()=>clearSlot('A'));
 $('slotClearB').addEventListener('click',()=>clearSlot('B'));
-$('slotPickBtnA').addEventListener('click',async()=>{await populatePickLists();$('slotPickListA').classList.toggle('open');});
-$('slotPickBtnB').addEventListener('click',async()=>{await populatePickLists();$('slotPickListB').classList.toggle('open');});
+$('slotPickBtnA').addEventListener('click',async()=>{await populatePickLists();setTimeout(()=>{$('slotPickListA').classList.toggle('open');},0);});
+$('slotPickBtnB').addEventListener('click',async()=>{await populatePickLists();setTimeout(()=>{$('slotPickListB').classList.toggle('open');},0);});
 
 function buildComparePrompt(){
   return `You are Kalypto, an AI research assistant specializing in comparing academic papers.\nAlways refer to them as "Paper A" and "Paper B". Be clear, structured, and educational.\nUse markdown tables when generating comparisons.\n\nPAPER A — ${compareSlots.A.name}:\n${compareSlots.A.text}\n\nPAPER B — ${compareSlots.B.name}:\n${compareSlots.B.text}`;
@@ -1209,6 +1238,7 @@ function normalizeArxivUrl(url){
 }
 
 async function loadFromUrl(){
+  if(urlFetchBtn.disabled)return;
   const raw=urlInput.value.trim();if(!raw)return;
   urlFetchBtn.disabled=true;urlFetchBtn.textContent='…';
   let pdfUrl=normalizeArxivUrl(raw);
@@ -1270,18 +1300,19 @@ dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remov
 
 async function sendMessage(override){
   const text=(override||userInput.value).trim();if(!text||isLoading)return;
-  addMessage('user',text);userInput.value='';userInput.style.height='auto';
-  isLoading=true;sendBtn.disabled=true;
+  isLoading=true;sendBtn.disabled=true;Object.values(quickBtns).forEach(b=>b.disabled=true);
+  addMessage('user',text);
+  if(!override){userInput.value='';userInput.style.height='auto';}
   const lm=addLoadingMessage();
   chatHistory.push({role:'user',content:text});
   try{
     const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1024,messages:[{role:'system',content:`You are Kalypto, an AI research & study assistant. Help users understand academic papers. Be clear and educational. Use markdown formatting.\n\nPAPER CONTENT:\n${paperText}`},...chatHistory.map(m=>({role:m.role==='user'?'user':'assistant',content:m.content}))]})});
-    if(res.status===429){lm.remove();chatHistory.pop();addMessage('ai','⚠️ Rate limit reached. Please wait a moment and try again.');isLoading=false;sendBtn.disabled=false;return;}
+    if(res.status===429){lm.remove();chatHistory.pop();addMessage('ai','⚠️ Rate limit reached. Please wait a moment and try again.');isLoading=false;sendBtn.disabled=false;Object.values(quickBtns).forEach(b=>b.disabled=!paperText);return;}
     const data=await res.json();lm.remove();
     if(data.error){addMessage('ai',`⚠️ ${data.error.message}`);chatHistory.pop();}
     else{const reply=data.choices?.[0]?.message?.content||'No response.';addMessage('ai',reply);chatHistory.push({role:'assistant',content:reply});await saveCurrentChat();}
   }catch(err){lm.remove();addMessage('ai',`⚠️ Network error: ${err.message}`);chatHistory.pop();}
-  isLoading=false;sendBtn.disabled=false;
+  isLoading=false;sendBtn.disabled=false;Object.values(quickBtns).forEach(b=>b.disabled=!paperText);
 }
 
 function renderMessage(role,text,animate=true){
@@ -1313,35 +1344,41 @@ function addLoadingMessage(){
 }
 
 function formatText(text){
-  let h=text
-    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-    .replace(/`(.*?)`/g,'<code>$1</code>');
-  h=h.replace(/((\|.+\|\n?)+)/g,m=>{
-    const rows=m.trim().split('\n').filter(r=>!/^[\s|:-]+$/.test(r));
-    if(rows.length<2)return m;
-    return '<div style="overflow-x:auto;margin:6px 0"><table style="border-collapse:collapse;width:100%;font-size:12px">'+
-      rows.map((row,i)=>'<tr>'+row.split('|').filter((_,j,a)=>j>0&&j<a.length-1).map(cell=>
-        i===0
-          ?`<th style="border:1px solid var(--border);padding:6px 10px;background:rgba(99,102,241,0.1);text-align:left;color:var(--accent-hi);font-weight:600">${cell.trim()}</th>`
-          :`<td style="border:1px solid var(--border);padding:6px 10px">${cell.trim()}</td>`
-      ).join('')+'</tr>').join('')+'</table></div>';
+  const FENCE='```';
+  const segments=text.split(FENCE);
+  const processedSegments=segments.map((seg,i)=>{
+    if(i%2!==0)return FENCE+seg+FENCE;
+    let h=seg
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/`(.*?)`/g,'<code>$1</code>');
+    h=h.replace(/((\|.+\|\n?)+)/g,m=>{
+      const rows=m.trim().split('\n').filter(r=>!/^[\s|:-]+$/.test(r));
+      if(rows.length<2)return m;
+      return '<div style="overflow-x:auto;margin:6px 0"><table style="border-collapse:collapse;width:100%;font-size:12px">'+
+        rows.map((row,i)=>'<tr>'+row.split('|').filter((_,j,a)=>j>0&&j<a.length-1).map(cell=>
+          i===0
+            ?`<th style="border:1px solid var(--border);padding:6px 10px;background:rgba(99,102,241,0.1);text-align:left;color:var(--accent-hi);font-weight:600">${cell.trim()}</th>`
+            :`<td style="border:1px solid var(--border);padding:6px 10px">${cell.trim()}</td>`
+        ).join('')+'</tr>').join('')+'</table></div>';
+    });
+    h=h.replace(/^- (.+)$/gm,'<li>$1</li>');
+    return h.split('\n\n').map(block=>{
+      block=block.replace(/<\/li>\n?<li>/g,'</li><li>').replace(/\n/g,'<br>');
+      const t=block.trim();
+      if(t.startsWith('<li>'))return`<ul>${block}</ul>`;
+      if(/^<(ul|div|table)/.test(t))return block;
+      return`<p>${block}</p>`;
+    }).join('');
   });
-  h=h.replace(/^- (.+)$/gm,'<li>$1</li>');
-  return h.split('\n\n').map(block=>{
-    block=block.replace(/<\/li>\n?<li>/g,'</li><li>').replace(/\n/g,'<br>');
-    const t=block.trim();
-    if(t.startsWith('<li>'))return`<ul>${block}</ul>`;
-    if(/^<(ul|div|table)/.test(t))return block;
-    return`<p>${block}</p>`;
-  }).join('');
+  return processedSegments.join('');
 }
 
 newChatBtn.addEventListener('click',createNewChat);
-quickBtns.summarize.addEventListener('click',()=>{sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.');closeSidebarOnMobile();});
-quickBtns.methods.addEventListener('click',()=>{sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?');closeSidebarOnMobile();});
-quickBtns.findings.addEventListener('click',()=>{sendMessage('What are the key findings and conclusions of this paper? What do the results mean?');closeSidebarOnMobile();});
-quickBtns.quiz.addEventListener('click',()=>{sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.');closeSidebarOnMobile();});
-quickBtns.flash.addEventListener('click',()=>{sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.');closeSidebarOnMobile();});
+quickBtns.summarize.addEventListener('click',()=>{sendMessage('Please give me a clear, structured summary of this paper. Include: what problem it addresses, the approach used, and the main findings.');userInput.value='';userInput.style.height='auto';closeSidebarOnMobile();});
+quickBtns.methods.addEventListener('click',()=>{sendMessage('Explain the research methodology of this paper in simple terms. What did the researchers actually do?');userInput.value='';userInput.style.height='auto';closeSidebarOnMobile();});
+quickBtns.findings.addEventListener('click',()=>{sendMessage('What are the key findings and conclusions of this paper? What do the results mean?');userInput.value='';userInput.style.height='auto';closeSidebarOnMobile();});
+quickBtns.quiz.addEventListener('click',()=>{sendMessage('Generate 5 study questions based on this paper, ranging from basic recall to deeper conceptual understanding. Include the answers.');userInput.value='';userInput.style.height='auto';closeSidebarOnMobile();});
+quickBtns.flash.addEventListener('click',()=>{sendMessage('Create 8 flashcard-style bullet points from this paper. Format each as: TERM: definition or concept.');userInput.value='';userInput.style.height='auto';closeSidebarOnMobile();});
 userInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
 userInput.addEventListener('input',()=>{userInput.style.height='auto';userInput.style.height=Math.min(userInput.scrollHeight,150)+'px';});
 sendBtn.addEventListener('click',()=>sendMessage());
