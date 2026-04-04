@@ -838,6 +838,9 @@ $('loginBtn').addEventListener('click',async()=>{
   }catch{authError.textContent='Unexpected error.';btn.disabled=false;btn.textContent='Sign In';}
 });
 $('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click();});
+$('loginEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click();});
+$('registerEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('registerBtn').click();});
+$('registerPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$('registerBtn').click();});
 
 $('registerBtn').addEventListener('click',async()=>{
   const email=$('registerEmail').value.trim(),password=$('registerPassword').value;
