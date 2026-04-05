@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalypto — AI Research & Study Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<div class="auth-modal" id="authModal">
+  <div class="auth-box">
+    <button class="auth-modal-close" id="authModalClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="auth-logo">Kaly<span>pto</span></div>
+    <p class="auth-tagline">AI-powered research &amp; study assistant</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="authTabLogin">Sign In</button>
+      <button class="auth-tab" id="authTabRegister">Create Account</button>
+    </div>
+    <div id="authLoginForm">
+      <div class="auth-form-fields">
+        <div class="auth-field"><label>Email</label><input type="email" class="auth-input" id="loginEmail" placeholder="you@email.com" autocomplete="email"/></div>
+        <div class="auth-field"><label>Password</label><input type="password" class="auth-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/></div>
+        <button class="auth-submit" id="loginBtn">Sign In</button>
+      </div>
+    </div>
+    <div id="authRegisterForm" style="display:none">
+      <div class="auth-form-fields">
+        <div class="auth-field"><label>Email</label><input type="email" class="auth-input" id="registerEmail" placeholder="you@email.com" autocomplete="email"/></div>
+        <div class="auth-field"><label>Password</label><input type="password" class="auth-input" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password"/></div>
+        <button class="auth-submit" id="registerBtn">Create Account</button>
+      </div>
+    </div>
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
+    <div class="auth-divider">or continue with</div>
+    <button class="auth-google" id="googleBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<div class="plan-modal" id="planModal">
+  <div class="plan-box">
+    <button class="plan-modal-close" id="planModalClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="plan-header">
+      <div class="plan-title">Choose Your Plan</div>
+      <p class="plan-subtitle">The bigger the paper, the bigger the insight — upgrade to read more</p>
+    </div>
+
+    <div class="plan-cards">
+      <div class="plan-card" id="planCardFree">
+        <div class="plan-name">Free</div>
+        <div class="plan-price-row"><div class="plan-price">₱0</div><div class="plan-price-period">/ forever</div></div>
+        <div class="plan-limit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> 12,000 characters</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Most short research papers</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Chat &amp; Compare mode</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Quick actions &amp; cloud sync</div>
+          <div class="plan-feature"><span class="feat-cross"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span><span style="color:var(--muted2)"> Graduate theses &amp; long papers</span></div>
+        </div>
+        <div class="plan-cta-free" id="freePlanCta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Current plan</div>
+      </div>
+
+      <div class="plan-card popular" id="planCardPro">
+        <div class="popular-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price-row"><div class="plan-price">₱149</div><div class="plan-price-period">/ month</div></div>
+        <div class="plan-limit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> 60,000 characters</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Free</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Graduate theses &amp; dissertations</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Review articles &amp; survey papers</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Priority support</div>
+        </div>
+        <div class="paypal-btn-wrap" id="paypalProWrap"></div>
+      </div>
+
+      <div class="plan-card" id="planCardScholar">
+        <div class="plan-name">Scholar</div>
+        <div class="plan-price-row"><div class="plan-price">₱249</div><div class="plan-price-period">/ month</div></div>
+        <div class="plan-limit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> 150,000 characters</div>
+        <div class="plan-features">
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Pro</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Full books &amp; long dissertations</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Extended AI chat context</div>
+          <div class="plan-feature"><span class="feat-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Early access to new features</div>
+        </div>
+        <div class="paypal-btn-wrap" id="paypalScholarWrap"></div>
+      </div>
+    </div>
+
+    <div class="plan-footer">
+      Payments processed securely by PayPal. Cancel anytime — no lock-in, no hidden fees.
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<header>
+  <div class="header-left">
+    <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
+    <div class="logo-icon">K</div>
+    <div class="logo">Kaly<span>pto</span></div>
+  </div>
+  <nav class="nav-tabs">
+    <a class="nav-tab active" id="navChat" href="#" onclick="navigate('chat');return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Chat</a>
+    <a class="nav-tab" id="navCompare" href="#compare" onclick="navigate('compare');return false;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg> Compare</a>
+  </nav>
+  <div class="header-right">
+    <button class="icon-btn" id="themeToggle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg> Light</button>
+    <div class="status-pill" id="statusPill">No paper loaded</div>
+    <button class="plan-btn" id="planBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> <span class="plan-btn-label">Plans</span></button>
+    <button class="user-btn" id="userBtn" style="display:none"><span id="userEmail">—</span><span class="sync-dot" id="syncDot"></span></button>
+    <button class="sign-in-btn" id="headerSignInBtn">Sign In</button>
+  </div>
+</header>
+
+<div class="app" id="app">
+  <div class="page page-chat" id="chatPage">
+    <aside class="sidebar" id="chatSidebar">
+      <div class="sidebar-top">
+        <button class="new-chat-btn" id="newChatBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Chat</button>
+        <div class="guest-banner" id="guestBanner" style="display:none">
+          <span>Sign in to save &amp; sync chats</span>
+          <button class="guest-banner-sign" id="guestSignInBtn">Sign In</button>
+        </div>
+        <div>
+          <div class="section-label">Research Paper</div>
+          <div class="tab-bar">
+            <button class="tab-btn active" id="tabUpload"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Upload PDF</button>
+            <button class="tab-btn" id="tabUrl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Paste URL</button>
+          </div>
+          <div class="tab-panel active" id="panelUpload">
+            <div class="drop-zone" id="dropZone">
+              <input type="file" id="fileInput" accept=".pdf"/>
+              <span class="drop-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+              <div class="drop-text"><strong>Upload a PDF</strong>Click or drag &amp; drop</div>
+            </div>
+          </div>
+          <div class="tab-panel" id="panelUrl">
+            <div class="url-row">
+              <input type="text" class="url-input" id="urlInput" placeholder="arxiv.org/abs/2301.07041"/>
+              <button class="url-fetch-btn" id="urlFetchBtn">Load</button>
+            </div>
+            <p class="url-hint">Supports <a href="https://arxiv.org" target="_blank">ArXiv</a> and direct .pdf URLs.</p>
+          </div>
+          <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="paper-card" id="paperCard">
+            <div class="paper-title" id="paperTitle">—</div>
+            <div class="paper-meta" id="paperMeta">—</div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">Quick Actions</div>
+          <div class="quick-actions">
+            <button class="quick-btn" id="btnSummarize" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> Summarize this paper</button>
+            <button class="quick-btn" id="btnMethods"   disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg> Explain the methodology</button>
+            <button class="quick-btn" id="btnFindings"  disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg> Key findings &amp; conclusions</button>
+            <button class="quick-btn" id="btnQuiz"      disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg> Generate study questions</button>
+            <button class="quick-btn" id="btnFlash"     disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Make flashcard points</button>
+          </div>
+        </div>
+      </div>
+      <div class="chat-list-section">
+        <div class="chat-list-label">Previous Chats</div>
+        <div id="chatList"><div class="no-chats" id="noChats">No saved chats yet.<br/>Upload a paper to get started.</div></div>
+      </div>
+    </aside>
+    <main class="chat-area">
+      <div class="chat-header" id="chatHeader">No paper loaded</div>
+      <div class="messages" id="messages">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg></div>
+          <div class="empty-title">Upload a paper to begin</div>
+          <p class="empty-sub">Upload a PDF or paste an ArXiv link, then ask questions, get summaries, or generate study materials.</p>
+        </div>
+      </div>
+      <div class="input-bar">
+        <textarea id="userInput" placeholder="Ask anything about the paper…" rows="1" maxlength="4000"></textarea>
+        <button class="send-btn" id="sendBtn" disabled><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+      </div>
+    </main>
+  </div>
+
+  <div class="page page-compare hidden-right" id="comparePage">
+    <aside class="cmp-sidebar" id="cmpSidebar">
+      <div class="cmp-sidebar-inner">
+        <div class="paper-slot-card">
+          <div class="paper-slot-header"><div class="slot-badge a">A</div><div class="slot-title">Paper A</div></div>
+          <div class="paper-slot-body">
+            <div class="slot-loaded" id="slotCardA"><div class="slot-loaded-name" id="slotNameA">—</div><div class="slot-loaded-meta" id="slotMetaA">—</div><button class="slot-clear-btn" id="slotClearA"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Remove paper</button></div>
+            <div class="slot-upload-area" id="slotUploadA">
+              <div class="slot-drop" id="slotDropA"><input type="file" id="slotFileA" accept=".pdf"/><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Upload PDF for Paper A</div>
+              <div class="slot-or">— or —</div>
+              <button class="slot-pick-btn" id="slotPickBtnA"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg> Pick from saved chats</button>
+              <div class="slot-pick-list" id="slotPickListA"></div>
+            </div>
+            <div class="slot-progress" id="slotProgressA"><div class="slot-progress-bar" id="slotProgressBarA"></div></div>
+          </div>
+        </div>
+        <div class="paper-slot-card">
+          <div class="paper-slot-header"><div class="slot-badge b">B</div><div class="slot-title">Paper B</div></div>
+          <div class="paper-slot-body">
+            <div class="slot-loaded" id="slotCardB"><div class="slot-loaded-name" id="slotNameB">—</div><div class="slot-loaded-meta" id="slotMetaB">—</div><button class="slot-clear-btn" id="slotClearB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Remove paper</button></div>
+            <div class="slot-upload-area" id="slotUploadB">
+              <div class="slot-drop" id="slotDropB"><input type="file" id="slotFileB" accept=".pdf"/><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Upload PDF for Paper B</div>
+              <div class="slot-or">— or —</div>
+              <button class="slot-pick-btn" id="slotPickBtnB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></svg> Pick from saved chats</button>
+              <div class="slot-pick-list" id="slotPickListB"></div>
+            </div>
+            <div class="slot-progress" id="slotProgressB"><div class="slot-progress-bar" id="slotProgressBarB"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">Quick Compare</div>
+          <div class="cmp-quick-actions">
+            <button class="cmp-quick-btn" id="cmpSummary"  disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> Side-by-side summary</button>
+            <button class="cmp-quick-btn" id="cmpAgree"    disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Points of agreement</button>
+            <button class="cmp-quick-btn" id="cmpConflict" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Contradictions</button>
+            <button class="cmp-quick-btn" id="cmpTable"    disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Comparison table</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="compare-main">
+      <div class="compare-header">
+        <span style="color:var(--muted);font-weight:500;font-size:11px;flex-shrink:0">Papers:</span>
+        <div class="compare-header-pills">
+          <span class="compare-header-pill" id="cmpPillA">A — none loaded</span>
+          <span class="compare-header-pill" id="cmpPillB">B — none loaded</span>
+        </div>
+      </div>
+      <div class="compare-results" id="compareResults">
+        <div class="compare-empty" id="compareEmpty">
+          <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></div>
+          <div class="empty-title">Load two papers to compare</div>
+          <p class="empty-sub">Use the sidebar to upload PDFs or pick from your saved chats, then ask a question or use the quick actions.</p>
+        </div>
+      </div>
+      <div class="cmp-input-bar">
+        <textarea id="compareInput" placeholder="Ask a question about both papers…" rows="1" maxlength="4000"></textarea>
+        <button class="send-btn" id="compareSendBtn" disabled><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
